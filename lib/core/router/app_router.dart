@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:serviq/features/input/presentation/screens/input_screen.dart';
 import 'package:serviq/features/matching/presentation/screens/ai_understanding_screen.dart';
 import 'package:serviq/features/matching/presentation/screens/provider_list_screen.dart';
+import 'package:serviq/features/booking/presentation/screens/pricing_breakdown_screen.dart';
+import 'package:serviq/features/booking/presentation/screens/booking_confirmation_screen.dart';
+import 'package:serviq/features/booking/presentation/screens/tracking_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -20,6 +23,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/provider-list',
         builder: (context, state) => const ProviderListScreen(),
+      ),
+      GoRoute(
+        path: '/pricing-breakdown',
+        builder: (context, state) => const PricingBreakdownScreen(),
+      ),
+      GoRoute(
+        path: '/booking-confirmation',
+        builder: (context, state) => const BookingConfirmationScreen(),
+      ),
+      GoRoute(
+        path: '/tracking',
+        builder: (context, state) => const TrackingScreen(),
       ),
     ],
   );

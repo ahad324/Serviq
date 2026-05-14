@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/premium_widgets.dart';
@@ -37,7 +38,7 @@ class ProviderListScreen extends ConsumerWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final provider = booking.provider;
-              return _buildProviderCard(provider, booking.decisionReasoning.selectedBecause);
+              return _buildProviderCard(context, provider, booking.decisionReasoning.selectedBecause);
             },
           );
         },
@@ -47,7 +48,7 @@ class ProviderListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProviderCard(dynamic provider, String reason) {
+  Widget _buildProviderCard(BuildContext context, dynamic provider, String reason) {
     return PremiumCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -95,7 +96,7 @@ class ProviderListScreen extends ConsumerWidget {
                 ),
               ),
               Text(
-                'PKR ${provider.baseFees}',
+                'PKR ${provider.baseFees.toInt()}',
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -134,7 +135,7 @@ class ProviderListScreen extends ConsumerWidget {
           PremiumButton(
             text: 'View Pricing Breakdown',
             onPressed: () {
-              // Navigate to pricing
+              context.push('/pricing-breakdown');
             },
           ),
         ],
