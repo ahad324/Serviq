@@ -1,0 +1,11 @@
+reviews:
+  profile: balanced
+
+path_filters:
+  - "lib/**"
+  - "test/**"
+  - "!build/**"
+
+ignore_patterns:
+  - "*.g.dart"
+  - "*.freezed.dart"
