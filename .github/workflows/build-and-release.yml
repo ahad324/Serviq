@@ -26,6 +26,12 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android licenses
+        run: yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -37,13 +43,21 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
+      - name: Verify APK build
+        run: |
+          if [ ! -f "build/app/outputs/flutter-apk/app-release.apk" ] && [ ! -f "build/app/outputs/apk/release/app-release.apk" ]; then
+            echo "APK not found in expected locations. Checking all APK files..."
+            find build -name "*.apk" -type f || echo "No APK files found"
+            exit 1
+          fi
+
       - name: Build Web
         run: flutter build web --release
 
       - name: Prepare artifacts
         run: |
           mkdir -p artifacts/web
-          cp build/app/outputs/flutter-app-release.apk artifacts/serviq.apk
+          cp build/app/outputs/flutter-apk/app-release.apk artifacts/serviq.apk
           cp -r build/web/* artifacts/web/
 
       - name: Generate version info

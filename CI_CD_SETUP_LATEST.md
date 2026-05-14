@@ -40,7 +40,7 @@ git push origin main
 |--------|---------|---------|-----------------|
 | `actions/checkout` | **v6** ✨ | Check out your code | ✅ Node.js 24 |
 | `actions/setup-java` | **v5** ✨ | Setup Java for Android build | ✅ Node.js 24 |
-| `subosito/flutter-action` | v2 | Setup Flutter environment | ✅ Node.js 24 (latest stable) |
+| `android-actions/setup-android` | v3 | Setup Android SDK and NDK | ✅ Node.js 24 |
 | `softprops/action-gh-release` | v3 | Create GitHub releases | ✅ Node.js 24 |
 | `actions/upload-artifact` | v7 | Upload build artifacts | ✅ Node.js 24 |
 
@@ -149,8 +149,12 @@ Add signing configuration to the APK build step
 ## 🆘 Troubleshooting
 
 | Issue | Solution |
-|-------|----------|| "Node.js 20 actions are deprecated" | ✅ **Fixed** - Updated to v6/v5 actions + FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true || Actions don't run | Enable Actions in Settings → Actions → General |
-| "Invalid action input" | Update action versions to v4/v7/v3 (already done) |
+|-------|----------|
+| "Node.js 20 actions are deprecated" | ✅ **Fixed** - Updated to v6/v5 actions + FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true |
+| "Unable to determine Flutter version" | ✅ **Fixed** - Removed invalid `flutter-version: "latest"` parameter |
+| NDK source.properties missing | ✅ **Fixed** - Added Android SDK setup with automatic NDK handling |
+| Actions don't run | Enable Actions in Settings → Actions → General |
+| "Invalid action input" | Update action versions to latest (already done) |
 | Build fails | Check Actions tab for detailed error logs |
 | Release not created | Verify `main` branch, check permissions |
 | APK too large | Add obfuscation: `--obfuscate --split-debug-info` |
