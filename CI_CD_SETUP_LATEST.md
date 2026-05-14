@@ -7,8 +7,9 @@
 A GitHub Actions workflow that automatically:
 1. **Builds Android APK** on every push to `main` branch (with optimized compression)
 2. **Builds Web version** on every push to `main` branch (balanced compression)
-3. **Creates GitHub Releases** with the APK download
-4. **Stores artifacts** for 30 days in workflow runs
+3. **Deploys Web to GitHub Pages** automatically (live at `https://ahad324.github.io/serviq`)
+4. **Creates GitHub Releases** with the APK download
+5. **Stores artifacts** for 30 days in workflow runs
 
 ---
 
@@ -27,9 +28,9 @@ git push origin main
 3. ✅ Install Flutter & dependencies
 4. ✅ Build Android APK (release, optimized)
 5. ✅ Build Web (release, with compression)
-6. ✅ Create a GitHub Release with:
+6. ✅ Deploy Web to **GitHub Pages** (live & accessible instantly)
+7. ✅ Create a GitHub Release with:
    - Download link for APK
-   - Download link for Web artifacts
    - Build date, version, commit info
 
 ---
@@ -40,8 +41,7 @@ git push origin main
 |--------|---------|---------|-----------------|
 | `actions/checkout` | **v6** ✨ | Check out your code | ✅ Node.js 24 |
 | `actions/setup-java` | **v5** ✨ | Setup Java for Android build | ✅ Node.js 24 |
-| `android-actions/setup-android` | v3 | Setup Android SDK and NDK | ✅ Node.js 24 |
-| `softprops/action-gh-release` | v3 | Create GitHub releases | ✅ Node.js 24 |
+| `android-actions/setup-android` | v3 | Setup Android SDK and NDK | ✅ Node.js 24 || `peaceiris/actions-gh-pages` | v4 | Deploy web to GitHub Pages | ✅ Node.js 24 || `softprops/action-gh-release` | v3 | Create GitHub releases | ✅ Node.js 24 |
 | `actions/upload-artifact` | v7 | Upload build artifacts | ✅ Node.js 24 |
 
 **✨ = Updated to latest Node.js 24 compatible versions**
@@ -83,16 +83,21 @@ This ensures **faster upload times** while maintaining good file sizes.
 
 ## 📥 Where to Find Your Built App
 
-### Option 1: GitHub Releases (Easiest for Users)
+### Option 1: Web App (GitHub Pages) - Live & Instant
+- Your web build is **automatically deployed** and live at:
+- `https://ahad324.github.io/serviq`
+- No download needed—users access it directly in the browser ✅
+
+### Option 2: Android APK (GitHub Releases)
 - Navigate to: `https://github.com/YOUR_USERNAME/serviq/releases`
 - Your APK will be there with each build
 - Users can download directly ⬇️
 
-### Option 2: Workflow Artifacts
+### Option 3: Workflow Artifacts
 - Go to **Actions** tab in GitHub
 - Click the latest workflow run
 - Scroll to bottom → **Artifacts**
-- Download `android-apk` or `web-build` (available for 30 days)
+- Download `android-apk` (available for 30 days)
 
 ---
 
@@ -127,6 +132,7 @@ Add signing configuration to the APK build step
 - [ ] `main` branch exists and is default
 - [ ] `pubspec.yaml` has version number
 - [ ] Workflow file exists at `.github/workflows/build-and-release.yml`
+- [ ] **GitHub Pages enabled**: Settings → Pages → Source set to **GitHub Actions**
 - [ ] Ready to test the CI/CD pipeline
 
 ---
@@ -142,7 +148,10 @@ Add signing configuration to the APK build step
    ```
 3. Go to **Actions** tab in GitHub
 4. Watch the build in real-time (~5-10 minutes)
-5. Check **Releases** tab when complete
+5. After build completes:
+   - ✅ **Web app** is live at GitHub Pages (within 1-2 minutes)
+   - ✅ **APK release** created in Releases tab
+   - ✅ Check the **gh-pages branch** for deployed web files
 
 ---
 
@@ -159,6 +168,9 @@ Add signing configuration to the APK build step
 | Release not created | Verify `main` branch, check permissions |
 | APK too large | Add obfuscation: `--obfuscate --split-debug-info` |
 | Slow uploads | Reduce `compression-level` on web artifacts |
+| GitHub Pages not live | Verify Settings → Pages → Source is set to **GitHub Actions** |
+| Web site shows 404 | Wait 2-3 minutes after build completes, then refresh browser |
+| Web site is blank | Check the build logs—ensure `flutter build web --release` succeeded |
 
 ---
 
@@ -166,6 +178,7 @@ Add signing configuration to the APK build step
 
 - [Flutter Build Docs](https://docs.flutter.dev/deployment)
 - [GitHub Actions for Flutter](https://github.com/marketplace/actions/flutter-action)
+- [GitHub Pages Deployment](https://github.com/peaceiris/actions-gh-pages)
 - [Latest upload-artifact@v7](https://github.com/actions/upload-artifact)
 - [Latest action-gh-release@v3](https://github.com/softprops/action-gh-release)
 - [GitHub Releases Docs](https://docs.github.com/en/repositories/releasing-projects-on-github/)

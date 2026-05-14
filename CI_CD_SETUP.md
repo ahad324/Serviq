@@ -5,8 +5,9 @@
 A GitHub Actions workflow that automatically:
 1. **Builds Android APK** on every push to `main` branch
 2. **Builds Web version** on every push to `main` branch
-3. **Creates GitHub Releases** with the APK download
-4. **Stores artifacts** for 30 days in workflow runs
+3. **Deploys Web to GitHub Pages** automatically (live at `https://ahad324.github.io/serviq`)
+4. **Creates GitHub Releases** with the APK download
+5. **Stores artifacts** for 30 days in workflow runs
 
 ---
 
