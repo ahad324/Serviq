@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Build Web
-        run: flutter build web --release
+        run: flutter build web --release --base-href "/Serviq/"
 
       - name: Prepare artifacts
         run: |
