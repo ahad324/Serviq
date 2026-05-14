@@ -36,15 +36,37 @@ git push origin main
 
 ## 📦 Latest Actions Used (May 2026)
 
-| Action | Version | Purpose | Status |
-|--------|---------|---------|--------|
-| `actions/checkout` | v4 | Check out your code | ✅ Current |
-| `actions/setup-java` | v4 | Setup Java for Android build | ✅ Current |
-| `subosito/flutter-action` | v2 | Setup Flutter environment | ✅ Current |
-| `softprops/action-gh-release` | **v3** | Create GitHub releases | ✨ Updated |
-| `actions/upload-artifact` | **v7** | Upload build artifacts | ✨ Updated |
+| Action | Version | Purpose | Node.js Support |
+|--------|---------|---------|-----------------|
+| `actions/checkout` | **v6** ✨ | Check out your code | ✅ Node.js 24 |
+| `actions/setup-java` | **v5** ✨ | Setup Java for Android build | ✅ Node.js 24 |
+| `subosito/flutter-action` | v2 | Setup Flutter environment | ✅ Node.js 24 |
+| `softprops/action-gh-release` | v3 | Create GitHub releases | ✅ Node.js 24 |
+| `actions/upload-artifact` | v7 | Upload build artifacts | ✅ Node.js 24 |
 
-**✨ = Recently updated from v1/v3 to latest**
+**✨ = Updated to latest Node.js 24 compatible versions**
+
+---
+
+## 🔧 Node.js 24 Configuration
+
+Your workflow includes:
+```yaml
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+```
+
+This forces all JavaScript actions to run on Node.js 24, preventing deprecation warnings.
+
+---
+
+## 📅 Timeline
+
+- **Current Date**: May 14, 2026
+- **Node.js 20 Deprecation**: June 2nd, 2026
+- **Node.js 20 Removal**: September 16th, 2026
+
+Your setup is **future-proof** and ready for the Node.js 24 transition!
 
 ---
 
@@ -127,8 +149,7 @@ Add signing configuration to the APK build step
 ## 🆘 Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
-| Actions don't run | Enable Actions in Settings → Actions → General |
+|-------|----------|| "Node.js 20 actions are deprecated" | ✅ **Fixed** - Updated to v6/v5 actions + FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true || Actions don't run | Enable Actions in Settings → Actions → General |
 | "Invalid action input" | Update action versions to v4/v7/v3 (already done) |
 | Build fails | Check Actions tab for detailed error logs |
 | Release not created | Verify `main` branch, check permissions |
