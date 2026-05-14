@@ -40,7 +40,7 @@ git push origin main
 |--------|---------|---------|-----------------|
 | `actions/checkout` | **v6** ✨ | Check out your code | ✅ Node.js 24 |
 | `actions/setup-java` | **v5** ✨ | Setup Java for Android build | ✅ Node.js 24 |
-| `subosito/flutter-action` | v2 | Setup Flutter environment | ✅ Node.js 24 |
+| `subosito/flutter-action` | v2 | Setup Flutter environment | ✅ Node.js 24 (latest stable) |
 | `softprops/action-gh-release` | v3 | Create GitHub releases | ✅ Node.js 24 |
 | `actions/upload-artifact` | v7 | Upload build artifacts | ✅ Node.js 24 |
 
