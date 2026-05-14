@@ -26,9 +26,18 @@ class _InputScreenState extends ConsumerState<InputScreen> {
 
   void _handleSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      await ref.read(serviceBookingProvider.notifier).submitQuery(_queryController.text);
-      if (mounted) {
-        context.go('/ai-understanding');
+      try {
+        await ref.read(serviceBookingProvider.notifier).submitQuery(_queryController.text);
+        
+        // After await, we check the current state of the provider.
+        // AsyncValue.hasValue and !hasError indicates success.
+        final state = ref.read(serviceBookingProvider);
+        if (state.hasValue && !state.hasError && mounted) {
+          context.go('/ai-understanding');
+        }
+      } catch (e) {
+        // Error is already handled by the AsyncNotifier and exposed via the provider state.
+        // The UI will show the error via _buildError.
       }
     }
   }

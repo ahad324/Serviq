@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
@@ -30,7 +31,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
                   const Spacer(),
                   _buildSuccessIcon(),
                   const SizedBox(height: 32),
-                  _buildConfirmationText(),
+                  _buildConfirmationText(booking),
                   const SizedBox(height: 48),
                   _buildBookingCard(booking),
                   const Spacer(),
@@ -78,7 +79,10 @@ class BookingConfirmationScreen extends ConsumerWidget {
     ).animate().scale(duration: 800.ms, curve: Curves.elasticOut);
   }
 
-  Widget _buildConfirmationText() {
+  Widget _buildConfirmationText(dynamic booking) {
+    final confirmedAt = booking.lifecycle.confirmed.at;
+    final timeStr = confirmedAt != null ? DateFormat('HH:mm').format(confirmedAt) : '--:--';
+    
     return Column(
       children: [
         Text(
@@ -92,7 +96,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
         ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
         const SizedBox(height: 12),
         Text(
-          'Your request BK-177875 has been accepted\nby Ali Repairs.',
+          'Your request ${booking.id.split('-').take(2).join('-')} has been accepted\nby ${booking.provider.name} at $timeStr.',
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 15,

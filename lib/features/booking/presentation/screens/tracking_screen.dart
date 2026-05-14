@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
@@ -31,6 +32,11 @@ class TrackingScreen extends ConsumerWidget {
           if (booking == null) return const SizedBox.shrink();
           
           final lifecycle = booking.lifecycle;
+          // Dynamically fetch arrival ETA. Fallback to 'TBD' if missing.
+          final arrivalEta = lifecycle.arrival.eta;
+          final etaStr = arrivalEta != null 
+              ? '${DateFormat('hh:mm a').format(arrivalEta)} Today'
+              : 'TBD';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -76,7 +82,7 @@ class TrackingScreen extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '11:58 AM Today',
+                            etaStr,
                             style: GoogleFonts.inter(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
