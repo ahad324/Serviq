@@ -5,6 +5,10 @@ on:
     branches: [main]
     tags: ["v*"]
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -51,7 +55,7 @@ jobs:
           echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.COMMIT_SHA }}
@@ -88,15 +92,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Web Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: web-build
           path: artifacts/web/
           retention-days: 30
+          compression-level: 6
 
       - name: Upload APK Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: android-apk
           path: artifacts/serviq.apk
           retention-days: 30
+          compression-level: 0
