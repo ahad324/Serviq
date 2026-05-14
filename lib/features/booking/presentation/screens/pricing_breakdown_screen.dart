@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/premium_widgets.dart';
-import '../../../input/presentation/providers/input_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:serviq/core/theme/app_colors.dart';
+import 'package:serviq/core/widgets/premium_widgets.dart';
+import 'package:serviq/features/input/presentation/providers/input_provider.dart';
 
 class PricingBreakdownScreen extends ConsumerWidget {
   const PricingBreakdownScreen({super.key});
@@ -19,14 +18,12 @@ class PricingBreakdownScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Price Breakdown',
-          style: GoogleFonts.inter(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
+        centerTitle: true,
+        title: const AppLogo(size: 14),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          onPressed: () => context.pop(),
         ),
-        leading: BackButton(color: AppColors.textPrimary),
       ),
       body: bookingState.when(
         data: (booking) {
@@ -35,30 +32,30 @@ class PricingBreakdownScreen extends ConsumerWidget {
           final pricing = booking.pricing;
 
           return Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildProviderSmallCard(booking.provider),
-                const SizedBox(height: 32),
+                _buildProviderHeader(booking.provider),
+                const SizedBox(height: 40),
                 Text(
-                  'Bill Summary',
+                  'BILL SUMMARY',
                   style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDisabled,
+                    letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(height: 16),
                 PremiumCard(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
                       ...pricing.breakdown.map((item) => _buildPriceRow(item.label, item.amount, pricing.currency)),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Divider(height: 1),
-                      ),
+                      const SizedBox(height: 16),
+                      const Divider(color: AppColors.surfaceDark),
+                      const SizedBox(height: 16),
                       _buildPriceRow(
                         'Grand Total',
                         pricing.grandTotal,
@@ -70,53 +67,63 @@ class PricingBreakdownScreen extends ConsumerWidget {
                 ),
                 const Spacer(),
                 PremiumButton(
-                  text: 'Confirm Booking',
-                  icon: Icons.check_circle_outline_rounded,
+                  text: 'Confirm & Book Now',
+                  icon: Icons.check_circle_rounded,
                   onPressed: () => context.go('/booking-confirmation'),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, st) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  Widget _buildProviderSmallCard(dynamic provider) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+  Widget _buildProviderHeader(dynamic provider) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.surfaceDark.withOpacity(0.5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 24),
           ),
-          child: Icon(Icons.person_rounded, color: AppColors.primary, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              provider.name,
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Professional Service',
-              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-      ],
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                provider.name,
+                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Top-Rated Professional',
+                style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildPriceRow(String label, double amount, String currency, {bool isTotal = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -124,15 +131,15 @@ class PricingBreakdownScreen extends ConsumerWidget {
             label,
             style: GoogleFonts.inter(
               fontSize: isTotal ? 16 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isTotal ? FontWeight.w900 : FontWeight.w500,
               color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
             ),
           ),
           Text(
             '$currency ${amount.toInt()}',
             style: GoogleFonts.inter(
-              fontSize: isTotal ? 18 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
+              fontSize: isTotal ? 20 : 14,
+              fontWeight: isTotal ? FontWeight.w900 : FontWeight.bold,
               color: isTotal ? AppColors.primary : AppColors.textPrimary,
             ),
           ),
