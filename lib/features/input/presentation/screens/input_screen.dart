@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/input_provider.dart';
 
@@ -25,6 +26,9 @@ class _InputScreenState extends ConsumerState<InputScreen> {
   void _handleSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
       await ref.read(serviceBookingProvider.notifier).submitQuery(_queryController.text);
+      if (mounted) {
+        context.go('/ai-understanding');
+      }
     }
   }
 
