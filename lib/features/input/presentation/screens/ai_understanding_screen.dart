@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
-import 'package:serviq/features/input/domain/models/booking_model.dart' as models;
+import 'package:serviq/features/common/domain/models/booking_model.dart' as models;
 
 class AIUnderstandingScreen extends ConsumerStatefulWidget {
   const AIUnderstandingScreen({super.key});
@@ -18,55 +18,71 @@ class AIUnderstandingScreen extends ConsumerStatefulWidget {
 
 class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
   bool _analysisComplete = false;
-  int _currentStep = 0;
-  final List<String> _steps = [
-    'Analyzing your request...',
-    'Matching with local experts...',
-    'Estimating the best rates...',
-    'Finalizing details...',
+  int _messageIndex = 0;
+  late Timer _timer;
+
+  final List<String> _analysisMessages = [
+    'Deconstructing your service request...',
+    'Analyzing context and specific requirements...',
+    'Optimizing search parameters for repair...',
+    'Scanning nearby high-rated providers...',
+    'Verifying provider availability and skillsets...',
+    'Comparing competitive pricing models...',
+    'Filtering for the best value matches...',
+    'Finalizing recommended provider...',
   ];
 
   @override
   void initState() {
     super.initState();
-    _startSteps();
+    _startMessageCycle();
   }
 
-  void _startSteps() async {
-    for (int i = 0; i < _steps.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 1500));
+  void _startMessageCycle() {
+    _timer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
       if (mounted) {
         setState(() {
-          _currentStep = i;
+          _messageIndex = (_messageIndex + 1) % _analysisMessages.length;
         });
       }
-    }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final bookingState = ref.watch(serviceBookingProvider);
 
+    // Auto-navigate when complete
+    ref.listen(serviceBookingProvider, (previous, next) {
+      if (next.hasValue && next.value != null && _analysisComplete) {
+        context.go('/tracking');
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Background Gradient
-          Positioned.fill(
+          // Background Glow
+          Positioned(
+            top: -100,
+            right: -100,
             child: Container(
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.topRight,
-                  radius: 1.5,
-                  colors: [
-                    AppColors.primary.withOpacity(0.05),
-                    AppColors.background,
-                  ],
-                ),
+                color: AppColors.primary.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
               ),
-            ),
+            ).animate().fadeIn(duration: 1.seconds).scale(begin: const Offset(0.5, 0.5)),
           ),
-          
+
           SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -76,59 +92,13 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildAnalysisIcon(bookingState.isLoading),
-                      const SizedBox(height: 48),
-                      Text(
-                        bookingState.isLoading ? 'Processing Request' : 'Analysis Complete',
-                        style: GoogleFonts.outfit(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ).animate().fadeIn().scale(),
-                      const SizedBox(height: 16),
-                      
-                      // Animated Step Text
-                      SizedBox(
-                        height: 24,
-                        child: AnimatedSwitcher(
-                          duration: 500.ms,
-                          transitionBuilder: (child, animation) => FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(animation),
-                              child: child,
-                            ),
-                          ),
-                          child: Text(
-                            _steps[_currentStep % _steps.length],
-                            key: ValueKey(_currentStep),
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      _buildAnalysisText(bookingState),
+                      const AppLogo(size: 14),
+                      const Spacer(),
+                      _buildAnimatedBrain(bookingState.isLoading),
                       const SizedBox(height: 60),
-                      
-                      if (_analysisComplete)
-                        PremiumButton(
-                          text: 'View Best Match',
-                          icon: Icons.arrow_forward_rounded,
-                          onPressed: () => context.go('/confirmation'),
-                        ).animate().fadeIn().moveY(begin: 20, end: 0)
-                      else if (bookingState.hasError)
-                         PremiumButton(
-                          text: 'Try Again',
-                          icon: Icons.refresh_rounded,
-                          onPressed: () => context.go('/input'),
-                        ).animate().fadeIn(),
+                      _buildThoughtSection(bookingState),
+                      const Spacer(),
+                      _buildFooter(bookingState),
                     ],
                   ),
                 ),
@@ -140,18 +110,18 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
     );
   }
 
-  Widget _buildAnalysisIcon(bool isLoading) {
+  Widget _buildAnimatedBrain(bool isLoading) {
     return Container(
-      width: 140,
-      height: 140,
+      width: 160,
+      height: 160,
       decoration: BoxDecoration(
         color: AppColors.surface,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.1),
-            blurRadius: 30,
-            spreadRadius: 5,
+            color: AppColors.primary.withValues(alpha: 0.1),
+            blurRadius: 40,
+            spreadRadius: 10,
           ),
         ],
       ),
@@ -159,38 +129,125 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
         alignment: Alignment.center,
         children: [
           if (isLoading)
-            const PremiumLoadingIndicator(size: 140)
-          else
-            const Icon(
-              Icons.check_rounded,
-              color: AppColors.primary,
-              size: 60,
-            ).animate().scale(duration: 400.ms, curve: Curves.backOut),
-            
+            SizedBox(
+              width: 140,
+              height: 140,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary.withValues(alpha: 0.3)),
+              ),
+            ).animate(onPlay: (c) => c.repeat()).rotate(duration: 3.seconds),
+          
           const Icon(
             Icons.psychology_rounded,
+            size: 80,
             color: AppColors.primary,
-            size: 48,
           ).animate(onPlay: (c) => c.repeat())
-           .shimmer(duration: 2.seconds, color: Colors.white.withOpacity(0.5)),
+           .shimmer(duration: 2.seconds, color: Colors.white.withValues(alpha: 0.4)),
+          
+          // Pulsing Ring
+          if (isLoading)
+            Container(
+              width: 20,
+              height: 20,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+            ).animate(onPlay: (controller) => controller.repeat())
+             .scale(begin: const Offset(1, 1), end: const Offset(4, 4), duration: 1500.milliseconds)
+             .fadeOut(duration: 1500.milliseconds),
         ],
+      ),
+    ).animate().fadeIn(duration: 800.milliseconds).scale(delay: 200.milliseconds);
+  }
+
+  Widget _buildThoughtSection(AsyncValue<models.Booking?> state) {
+    return Column(
+      children: [
+        Text(
+          'AI COGNITION ENGINE',
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            color: AppColors.primary,
+            letterSpacing: 2,
+          ),
+        ).animate().fadeIn(),
+        const SizedBox(height: 20),
+        
+        state.when(
+          data: (booking) {
+            if (booking == null) return _buildCyclingMessages();
+            return _buildReasoningBox(booking.decisionReasoning.selectedBecause);
+          },
+          loading: () => _buildCyclingMessages(),
+          error: (err, _) => Text(
+            'Cognition Interrupted: ${err.toString()}',
+            style: GoogleFonts.inter(color: AppColors.error),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCyclingMessages() {
+    return SizedBox(
+      height: 40,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: animation.drive(Tween(begin: const Offset(0, 0.3), end: Offset.zero)),
+              child: child,
+            ),
+          );
+        },
+        child: Text(
+          _analysisMessages[_messageIndex],
+          key: ValueKey(_messageIndex),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.5,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildAnalysisText(AsyncValue<models.Booking?> state) {
+  Widget _buildReasoningBox(String reasoning) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.surfaceDark.withOpacity(0.5)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
       ),
-      child: state.when(
-        data: (booking) {
-          if (booking == null) return const Text('Waiting for request...');
-          return TypewriterText(
-            text: booking.decisionReasoning.selectedBecause,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.auto_awesome, size: 16, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                'STRATEGIC DECISION',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TypewriterText(
+            text: reasoning,
             style: GoogleFonts.inter(
               fontSize: 16,
               height: 1.6,
@@ -202,28 +259,41 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
                 _analysisComplete = true;
               });
             },
-          );
-        },
-        loading: () => Text(
-          'Analyzing your request, finding the best service providers, and checking availability...',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            height: 1.6,
-            color: AppColors.textSecondary,
-            fontStyle: FontStyle.italic,
           ),
-        ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds),
-        error: (error, stack) => Text(
-          'Error: ${error.toString()}',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: AppColors.error,
-          ),
-        ),
+        ],
       ),
-    );
+    ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95));
+  }
+
+  Widget _buildFooter(AsyncValue<models.Booking?> state) {
+    return Column(
+      children: [
+        if (state.isLoading) ...[
+          LinearProgressIndicator(
+            backgroundColor: AppColors.surfaceDark,
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+            borderRadius: BorderRadius.circular(10),
+          ).animate().shimmer(duration: 2.seconds, color: Colors.white24),
+          const SizedBox(height: 16),
+        ],
+        
+        if (_analysisComplete)
+          PremiumButton(
+            text: 'Track Provider',
+            icon: Icons.map_rounded,
+            onPressed: () => context.go('/tracking'),
+          ).animate().fadeIn().moveY(begin: 20, end: 0)
+        else
+          Text(
+            state.isLoading ? 'Processing neural nodes...' : 'Verification complete',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: AppColors.textDisabled,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+      ],
+    ).animate().fadeIn(delay: 600.milliseconds);
   }
 }
 

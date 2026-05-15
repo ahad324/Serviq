@@ -1,107 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
+import 'package:serviq/core/theme/app_colors.dart';
 
 class PremiumCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
-  final double? borderRadius;
-  final Color? color;
-  final Border? border;
+  final double borderRadius;
+  final List<Color>? gradientColors;
 
   const PremiumCard({
     super.key,
     required this.child,
     this.padding,
-    this.borderRadius,
-    this.color,
-    this.border,
+    this.borderRadius = 24.0,
+    this.gradientColors,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(24),
+      padding: padding,
       decoration: BoxDecoration(
-        color: color ?? AppColors.surface,
-        borderRadius: BorderRadius.circular(borderRadius ?? 20),
-        border: border ?? Border.all(color: AppColors.surfaceDark.withOpacity(0.5), width: 1),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: gradientColors != null
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradientColors!,
+              )
+            : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: child,
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
+    );
   }
 }
 
 class PremiumButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
-  final bool isLoading;
   final IconData? icon;
+  final bool isLoading;
   final Color? color;
-  final Color? textColor;
 
   const PremiumButton({
     super.key,
     required this.text,
     required this.onPressed,
-    this.isLoading = false,
     this.icon,
+    this.isLoading = false,
     this.color,
-    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: 200.ms,
-      width: double.infinity,
-      height: 60,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color ?? AppColors.primary,
-          foregroundColor: textColor ?? Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 0,
+    final baseColor = color ?? AppColors.primary;
+
+    return Container(
+      height: 58,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            baseColor,
+            baseColor.withBlue(baseColor.blue + 30).withRed(baseColor.red + 10),
+          ],
         ),
-        child: isLoading
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: PremiumLoadingIndicator(color: Colors.white, size: 24),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(text, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                ],
-              ),
+        boxShadow: [
+          BoxShadow(
+            color: baseColor.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-    ).animate().scale(duration: 200.ms, curve: Curves.easeOut);
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          borderRadius: BorderRadius.circular(20),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, color: Colors.white, size: 20),
+                        const SizedBox(width: 10),
+                      ],
+                      Text(
+                        text,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
 class AppLogo extends StatelessWidget {
   final double size;
-  final Color? color;
   final bool showText;
 
   const AppLogo({
-    super.key, 
-    this.size = 24, 
-    this.color,
+    super.key,
+    this.size = 12,
     this.showText = true,
   });
 
@@ -111,27 +143,23 @@ class AppLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: size * 1.5,
-          height: size * 1.5,
+          width: size * 4,
+          height: size * 4,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryLight],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(size * 0.4),
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(size),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.2),
-                blurRadius: 10,
+                color: AppColors.primary.withValues(alpha: 0.3),
+                blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Icon(
-            Icons.flash_on_rounded, 
-            color: AppColors.accent, 
-            size: size * 0.9,
+            Icons.bolt_rounded,
+            color: Colors.white,
+            size: size * 2.5,
           ),
         ),
         if (showText) ...[
@@ -139,10 +167,10 @@ class AppLogo extends StatelessWidget {
           Text(
             'SERVIQ',
             style: GoogleFonts.plusJakartaSans(
-              fontSize: size,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
-              color: color ?? AppColors.textPrimary,
+              fontSize: size * 2.2,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+              letterSpacing: 2,
             ),
           ),
         ],
@@ -151,97 +179,147 @@ class AppLogo extends StatelessWidget {
   }
 }
 
-class ScreenHeader extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
+class PremiumTextField extends StatefulWidget {
+  final String label;
+  final String hint;
+  final IconData prefixIcon;
+  final TextEditingController? controller;
+  final bool isPassword;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
-  const ScreenHeader({
-    super.key, 
-    required this.title, 
-    this.subtitle,
-    this.trailing,
+  const PremiumTextField({
+    super.key,
+    required this.label,
+    required this.hint,
+    required this.prefixIcon,
+    this.controller,
+    this.isPassword = false,
+    this.keyboardType,
+    this.validator,
   });
+
+  @override
+  State<PremiumTextField> createState() => _PremiumTextFieldState();
+}
+
+class _PremiumTextFieldState extends State<PremiumTextField> {
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const AppLogo(size: 14),
-            if (trailing != null) trailing!,
-          ],
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            widget.label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary.withValues(alpha: 0.8),
+              letterSpacing: 0.2,
+            ),
+          ),
         ),
-        const SizedBox(height: 24),
-        Text(
-          title,
+        TextFormField(
+          controller: widget.controller,
+          obscureText: widget.isPassword ? _obscureText : false,
+          keyboardType: widget.keyboardType,
+          validator: widget.validator,
           style: GoogleFonts.inter(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            height: 1.2,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
+          decoration: InputDecoration(
+            hintText: widget.hint,
+            hintStyle: GoogleFonts.inter(
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              fontSize: 15,
+            ),
+            prefixIcon: Icon(widget.prefixIcon, color: AppColors.primary, size: 20),
+            suffixIcon: widget.isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _obscureText = !_obscureText),
+                  )
+                : null,
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: AppColors.error, width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
+            ),
+            errorStyle: GoogleFonts.inter(
+              fontSize: 12,
+              color: AppColors.error,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 12),
-          Text(
-            subtitle!,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-        ],
       ],
-    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05);
-  }
-}
-
-class PremiumLoadingIndicator extends StatelessWidget {
-  final Color? color;
-  final double size;
-
-  const PremiumLoadingIndicator({super.key, this.color, this.size = 40});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CircularProgressIndicator(
-            strokeWidth: 2,
-            color: color ?? AppColors.primary,
-          ),
-          Container(
-            width: size * 0.4,
-            height: size * 0.4,
-            decoration: BoxDecoration(
-              color: (color ?? AppColors.primary).withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-          ).animate(onPlay: (controller) => controller.repeat())
-           .scale(begin: const Offset(0.5, 0.5), end: const Offset(1.2, 1.2), duration: 1000.ms, curve: Curves.easeInOut)
-           .fadeOut(duration: 1000.ms),
-        ],
-      ),
     );
   }
 }
 
+class GlassContainer extends StatelessWidget {
+  final Widget child;
+  final double blur;
+  final double opacity;
+  final Color color;
+
+  const GlassContainer({
+    super.key,
+    required this.child,
+    this.blur = 10,
+    this.opacity = 0.1,
+    this.color = Colors.white,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ColorFilter.mode(
+          color.withValues(alpha: opacity),
+          BlendMode.srcOver,
+        ),
+        child: child,
+      ),
+    );
+  }
+}
 
 class StatusBadge extends StatelessWidget {
   final String text;
   final Color? color;
 
   const StatusBadge({
-    super.key, 
+    super.key,
     required this.text,
     this.color,
   });
@@ -250,12 +328,12 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseColor = color ?? AppColors.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: baseColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        color: baseColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: baseColor.withOpacity(0.2),
+          color: baseColor.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -270,16 +348,16 @@ class StatusBadge extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: baseColor.withOpacity(0.5),
+                  color: baseColor.withValues(alpha: 0.5),
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),
               ],
             ),
           ).animate(onPlay: (controller) => controller.repeat())
-           .fadeIn(duration: 600.ms)
+           .fadeIn(duration: 600.milliseconds)
            .then()
-           .fadeOut(duration: 600.ms),
+           .fadeOut(duration: 600.milliseconds),
           const SizedBox(width: 8),
           Text(
             text,
@@ -295,3 +373,69 @@ class StatusBadge extends StatelessWidget {
     );
   }
 }
+
+class PremiumLoadingIndicator extends StatelessWidget {
+  final double size;
+  final Color? color;
+
+  const PremiumLoadingIndicator({
+    super.key,
+    this.size = 40.0,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CircularProgressIndicator(
+          color: color ?? AppColors.primary,
+          strokeWidth: 3.0,
+        ),
+      ),
+    );
+  }
+}
+
+class ScreenHeader extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+
+  const ScreenHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+            height: 1.2,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            subtitle!,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+

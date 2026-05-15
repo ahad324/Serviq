@@ -1,89 +1,171 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
-import 'package:serviq/features/tracking/presentation/providers/tracking_provider.dart';
-import 'package:serviq/features/tracking/presentation/providers/tracking_state.dart';
+import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
 
-class TrackingScreen extends ConsumerWidget {
+class TrackingScreen extends ConsumerStatefulWidget {
   const TrackingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tracking = ref.watch(trackingProvider);
+  ConsumerState<TrackingScreen> createState() => _TrackingScreenState();
+}
+
+class _TrackingScreenState extends ConsumerState<TrackingScreen> {
+  bool _isUpdating = false;
+
+  Future<void> _updateStatus(String bookingId, String nextStatus) async {
+    setState(() => _isUpdating = true);
+    final supabase = Supabase.instance.client;
+
+    try {
+      await supabase
+          .from('Bookings')
+          .update({'status': nextStatus})
+          .eq('id', bookingId);
+
+      await supabase.from('booking_logs').insert({
+        'booking_id': bookingId,
+        'status': nextStatus,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+
+      // In a real app, we'd use a stream or refresh the provider
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✓ Status updated to ${nextStatus.replaceAll('_', ' ')}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating status: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(sessionNotifierProvider);
+    final supabase = Supabase.instance.client;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildStatusCard(tracking),
-                        const SizedBox(height: 32),
-                        _buildTimeline(tracking),
-                        const SizedBox(height: 32),
-                        _buildProviderCard(tracking),
-                      ],
+        child: StreamBuilder<List<Map<String, dynamic>>>(
+          stream: supabase
+              .from('Bookings')
+              .stream(primaryKey: ['id'])
+              .eq('user_id', user?.id ?? '')
+              .order('created_at', ascending: false)
+              .limit(1),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const PremiumLoadingIndicator();
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            
+            final bookings = snapshot.data ?? [];
+            if (bookings.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.location_searching_rounded, size: 64, color: AppColors.textDisabled.withValues(alpha: 0.5)),
+                    const SizedBox(height: 20),
+                    Text(
+                      'No active bookings to track',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Book a service to see live updates',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-                _buildActionButtons(tracking),
-              ],
-            ),
-          ),
+              );
+            }
+
+            final booking = bookings.first;
+            final String currentStatus = booking['status'];
+            final String bookingId = booking['id'];
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 24),
+                  _buildStatusCard(currentStatus),
+                  const SizedBox(height: 32),
+                  _buildTimeline(currentStatus),
+                  const SizedBox(height: 32),
+                  _buildActionButtons(bookingId, currentStatus),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return const Padding(
-      padding: EdgeInsets.all(24),
-      child: Row(
-        children: [
-          AppLogo(size: 10),
-          Spacer(),
-          StatusBadge(text: 'LIVE TRACKING'),
-        ],
-      ),
+    return Row(
+      children: [
+        const AppLogo(size: 10),
+        const Spacer(),
+        const StatusBadge(text: 'LIVE TRACKING'),
+      ],
     );
   }
 
-  Widget _buildStatusCard(TrackingState tracking) {
-    String statusText = '';
+  Widget _buildStatusCard(String status) {
+    String statusTitle = '';
     String subText = '';
-    
-    switch (tracking.status) {
-      case TrackingStatus.confirmed:
-        statusText = 'Booking Confirmed';
-        subText = 'We are assigning your professional';
+    double progress = 0.2;
+
+    switch (status) {
+      case 'confirmed':
+        statusTitle = 'Booking Confirmed';
+        subText = 'A professional is being assigned';
+        progress = 0.2;
         break;
-      case TrackingStatus.enRoute:
-        statusText = 'Professional En Route';
+      case 'en_route':
+        statusTitle = 'Professional En Route';
         subText = 'Arriving in approx. 15 mins';
+        progress = 0.4;
         break;
-      case TrackingStatus.arrived:
-        statusText = 'Professional Arrived';
-        subText = 'Checking in at your location';
+      case 'arrived':
+        statusTitle = 'Professional Arrived';
+        subText = 'Ready to start the service';
+        progress = 0.6;
         break;
-      case TrackingStatus.working:
-        statusText = 'Service in Progress';
-        subText = 'Estimating 30 mins to finish';
+      case 'in_progress':
+        statusTitle = 'Service In Progress';
+        subText = 'Your service is being handled';
+        progress = 0.8;
         break;
-      case TrackingStatus.completed:
-        statusText = 'Service Completed';
-        subText = 'Hope you enjoyed the service!';
+      case 'completed':
+        statusTitle = 'Service Completed';
+        subText = 'Hope you had a great experience!';
+        progress = 1.0;
         break;
     }
 
@@ -98,9 +180,9 @@ class TrackingScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      statusText,
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
+                      statusTitle,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
                       ),
@@ -111,67 +193,32 @@ class TrackingScreen extends ConsumerWidget {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-              if (tracking.status != TrackingStatus.completed)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.primary,
-                  ),
-                ),
+              if (status != 'completed')
+                const PremiumLoadingIndicator(size: 24),
             ],
           ),
           const SizedBox(height: 24),
-          _buildProgressBar(tracking.progress),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+            borderRadius: BorderRadius.circular(4),
+            minHeight: 8,
+          ),
         ],
       ),
-    ).animate().fadeIn().slideY(begin: 0.1);
-  }
-
-  Widget _buildProgressBar(double progress) {
-    return Stack(
-      children: [
-        Container(
-          height: 8,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          height: 8,
-          width: progress * 500, // Roughly proportional
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
-            ),
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
-  Widget _buildTimeline(TrackingState tracking) {
+  Widget _buildTimeline(String currentStatus) {
+    final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
+    final currentIndex = steps.indexOf(currentStatus);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -184,52 +231,49 @@ class TrackingScreen extends ConsumerWidget {
             letterSpacing: 1.5,
           ),
         ),
-        const SizedBox(height: 20),
-        _buildTimelineItem('Booking Confirmed', 'Done', isDone: true),
-        _buildTimelineItem(
-          'Professional En Route', 
-          'In Transit', 
-          isDone: tracking.status.index >= TrackingStatus.enRoute.index,
-          isActive: tracking.status == TrackingStatus.enRoute,
-        ),
-        _buildTimelineItem(
-          'Service Started', 
-          'Working', 
-          isDone: tracking.status.index >= TrackingStatus.working.index,
-          isActive: tracking.status == TrackingStatus.working,
-        ),
-        _buildTimelineItem(
-          'Completion', 
-          'Success', 
-          isDone: tracking.status == TrackingStatus.completed,
-          isActive: tracking.status == TrackingStatus.completed,
-          isLast: true,
-        ),
+        const SizedBox(height: 24),
+        ...List.generate(steps.length, (index) {
+          final step = steps[index];
+          final isDone = index < currentIndex;
+          final isActive = index == currentIndex;
+          final isLast = index == steps.length - 1;
+
+          return _buildTimelineItem(
+            step.replaceAll('_', ' ').toUpperCase(),
+            isDone: isDone,
+            isActive: isActive,
+            isLast: isLast,
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildTimelineItem(String title, String status, {required bool isDone, bool isActive = false, bool isLast = false}) {
+  Widget _buildTimelineItem(String title, {required bool isDone, bool isActive = false, bool isLast = false}) {
     return IntrinsicHeight(
       child: Row(
         children: [
           Column(
             children: [
               Container(
-                width: 16,
-                height: 16,
+                width: 20,
+                height: 20,
                 decoration: BoxDecoration(
-                  color: isDone ? AppColors.primary : (isActive ? AppColors.primary.withOpacity(0.3) : AppColors.surfaceDark),
+                  color: isDone ? AppColors.primary : (isActive ? AppColors.primary.withValues(alpha: 0.2) : Colors.white),
                   shape: BoxShape.circle,
-                  border: isActive ? Border.all(color: AppColors.primary, width: 2) : null,
+                  border: Border.all(
+                    color: isDone || isActive ? AppColors.primary : AppColors.textDisabled.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
                 ),
-                child: isDone ? const Icon(Icons.check, size: 10, color: Colors.white) : null,
+                child: isDone ? const Icon(Icons.check, size: 12, color: Colors.white) : (isActive ? Center(child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle))) : null),
               ),
               if (!isLast)
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: isDone ? AppColors.primary : AppColors.surfaceDark,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    color: isDone ? AppColors.primary : AppColors.textDisabled.withValues(alpha: 0.1),
                   ),
                 ),
             ],
@@ -241,19 +285,10 @@ class TrackingScreen extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: isDone || isActive ? FontWeight.w700 : FontWeight.w500,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: isDone || isActive ? FontWeight.w800 : FontWeight.w600,
                     color: isDone || isActive ? AppColors.textPrimary : AppColors.textDisabled,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  status,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: isDone || isActive ? AppColors.primary : AppColors.textDisabled,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -265,72 +300,39 @@ class TrackingScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProviderCard(TrackingState tracking) {
-    return PremiumCard(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundImage: NetworkImage(tracking.providerImage),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tracking.providerName,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  'Expert Technician',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.phone_in_talk_rounded, color: AppColors.primary),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
-            ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.chat_bubble_rounded, color: AppColors.secondary),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.secondary.withOpacity(0.1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildActionButtons(String bookingId, String currentStatus) {
+    final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
+    final currentIndex = steps.indexOf(currentStatus);
+    
+    if (currentIndex == steps.length - 1) {
+      return PremiumButton(
+        text: 'Rate Service',
+        onPressed: () {},
+        icon: Icons.star_rounded,
+      );
+    }
 
-  Widget _buildActionButtons(TrackingState tracking) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          Expanded(
-            child: PremiumButton(
-              text: tracking.status == TrackingStatus.completed ? 'Service Finished' : 'Cancel Booking',
-              onPressed: () {},
-              color: tracking.status == TrackingStatus.completed ? AppColors.success : AppColors.error,
-              icon: tracking.status == TrackingStatus.completed ? Icons.check : Icons.close,
+    final nextStatus = steps[currentIndex + 1];
+    final buttonText = 'Mark as ${nextStatus.replaceAll('_', ' ')}';
+
+    return Column(
+      children: [
+        PremiumButton(
+          text: buttonText,
+          onPressed: () => _updateStatus(bookingId, nextStatus),
+          isLoading: _isUpdating,
+          icon: Icons.double_arrow_rounded,
+        ),
+        const SizedBox(height: 12),
+        if (currentIndex < 2) // Only allow cancellation before arrival
+          TextButton(
+            onPressed: () {},
+            child: Text(
+              'Cancel Booking',
+              style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.w600),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

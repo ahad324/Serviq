@@ -2,20 +2,19 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'tracking_state.dart';
 
-final trackingProvider = StateNotifierProvider<TrackingNotifier, TrackingState>((ref) {
-  return TrackingNotifier();
-});
+final trackingProvider = NotifierProvider<TrackingNotifier, TrackingState>(TrackingNotifier.new);
 
-class TrackingNotifier extends StateNotifier<TrackingState> {
-  TrackingNotifier()
-      : super(const TrackingState(
-          status: TrackingStatus.confirmed,
-          providerName: 'Asif Khan',
-          providerImage: 'https://i.pravatar.cc/150?u=asif',
-          estimatedArrivalTime: '12:45 PM',
-          progress: 0.2,
-        )) {
+class TrackingNotifier extends Notifier<TrackingState> {
+  @override
+  TrackingState build() {
     _startSimulation();
+    return const TrackingState(
+      status: TrackingStatus.confirmed,
+      providerName: 'Asif Khan',
+      providerImage: 'https://i.pravatar.cc/150?u=asif',
+      estimatedArrivalTime: '12:45 PM',
+      progress: 0.2,
+    );
   }
 
   void _startSimulation() {

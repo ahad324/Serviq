@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
@@ -85,7 +84,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
   }
 
   Widget _buildConfirmationText(dynamic booking) {
-    final confirmedAt = booking.lifecycle.confirmed.at;
+    final confirmedAt = booking.lifecycle.confirmed?.at;
     final confirmedTime = confirmedAt ?? DateTime.now();
     final timeStr = '${confirmedTime.hour.toString().padLeft(2, '0')}:${confirmedTime.minute.toString().padLeft(2, '0')}';
     

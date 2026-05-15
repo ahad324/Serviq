@@ -26,10 +26,12 @@ class _InputScreenState extends ConsumerState<InputScreen> {
 
   void _handleSubmit() async {
     if (_queryController.text.trim().isEmpty) return;
-    
+
     // Start the submission process
-    ref.read(serviceBookingProvider.notifier).submitQuery(_queryController.text);
-    
+    ref
+        .read(serviceBookingProvider.notifier)
+        .submitQuery(_queryController.text);
+
     // Navigate immediately to the AI Understanding screen
     if (mounted) {
       context.go('/ai-understanding');
@@ -44,11 +46,15 @@ class _InputScreenState extends ConsumerState<InputScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -57,18 +63,19 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                       const ScreenHeader(
                         title: 'What service do you\nneed today?',
                       ),
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 48),
                       _buildInputSection(bookingState.isLoading),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 32),
                       PremiumButton(
                         text: 'Find Service Provider',
                         icon: Icons.search_rounded,
                         isLoading: bookingState.isLoading,
                         onPressed: _handleSubmit,
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
                       _buildMicButton(),
-                      if (bookingState.hasError) _buildError(bookingState.error.toString()),
+                      if (bookingState.hasError)
+                        _buildError(bookingState.error.toString()),
                     ],
                   ),
                 ),
@@ -86,10 +93,13 @@ class _InputScreenState extends ConsumerState<InputScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.surfaceDark.withOpacity(0.5), width: 1),
+        border: Border.all(
+          color: AppColors.surfaceDark.withValues(alpha: 0.5),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -112,7 +122,7 @@ class _InputScreenState extends ConsumerState<InputScreen> {
         validator: (value) =>
             value?.isEmpty ?? true ? 'Please describe your request' : null,
       ),
-    ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.98, 0.98));
+    ).animate().fadeIn(delay: 400.milliseconds).scale(begin: const Offset(0.98, 0.98));
   }
 
   Widget _buildMicButton() {
@@ -122,10 +132,14 @@ class _InputScreenState extends ConsumerState<InputScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.mic_none_rounded, color: AppColors.primary, size: 28),
+            child: const Icon(
+              Icons.mic_none_rounded,
+              color: AppColors.primary,
+              size: 28,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -139,7 +153,7 @@ class _InputScreenState extends ConsumerState<InputScreen> {
           ),
         ],
       ),
-    ).animate().fadeIn(delay: 600.ms);
+    ).animate().fadeIn(delay: 600.milliseconds);
   }
 
   Widget _buildError(String error) {
@@ -148,7 +162,7 @@ class _InputScreenState extends ConsumerState<InputScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.error.withOpacity(0.1),
+          color: AppColors.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -158,7 +172,11 @@ class _InputScreenState extends ConsumerState<InputScreen> {
             Expanded(
               child: Text(
                 error,
-                style: const TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  color: AppColors.error,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
