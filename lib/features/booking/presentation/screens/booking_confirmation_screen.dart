@@ -44,7 +44,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () => context.go('/'),
+                        onPressed: () => context.go('/input'),
                         child: Text(
                           'Back to Home',
                           style: GoogleFonts.inter(

@@ -12,6 +12,7 @@ import 'package:serviq/features/common/presentation/screens/profile_screen.dart'
 import 'package:serviq/features/booking/presentation/screens/booking_history_screen.dart';
 import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
 import 'package:serviq/core/widgets/bottom_nav_bar.dart';
+import 'package:serviq/core/widgets/not_found_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -28,8 +29,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (!isLoggedIn && !isAuthRoute) return '/auth';
       if (isLoggedIn && isAuthRoute) return '/input';
+      if (state.matchedLocation == '/') return '/input';
       return null;
     },
+    errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
       GoRoute(
         path: '/auth',
