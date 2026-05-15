@@ -28,8 +28,8 @@ class ServiceRepositoryImpl implements ServiceRepository {
       final payload = {
         'query': query,
         'test': true,
-        'longitude': lng ?? 74.29166,
-        'latitude': lat ?? 31.568490,
+        'longitude': lng,
+        'latitude': lat,
       };
       print('Payload: $payload');
 

@@ -9,6 +9,7 @@ import '../../../../core/services/location_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/session_provider.dart';
 import '../../data/models/auth_exception.dart';
+import '../../../../core/utils/validators.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -178,10 +179,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         hint: 'John Doe',
                         prefixIcon: Icons.person_outline_rounded,
                         keyboardType: TextInputType.name,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter your name';
-                          return null;
-                        },
+                        validator: AppValidators.validateName,
                       ),
                       const SizedBox(height: 20),
                       PremiumTextField(
@@ -190,10 +188,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         hint: '03XX XXXXXXX',
                         prefixIcon: Icons.phone_android_rounded,
                         keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter phone number';
-                          return null;
-                        },
+                        validator: AppValidators.validatePhone,
                       ),
                       const SizedBox(height: 20),
                     ],
@@ -203,11 +198,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       hint: 'your@email.com',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter email';
-                        if (!value.contains('@')) return 'Invalid email';
-                        return null;
-                      },
+                      validator: AppValidators.validateEmail,
                     ),
                     const SizedBox(height: 20),
                     PremiumTextField(
@@ -216,11 +207,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       hint: '••••••••',
                       prefixIcon: Icons.lock_outline_rounded,
                       isPassword: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter password';
-                        if (value.length < 8) return 'Min 8 characters';
-                        return null;
-                      },
+                      validator: (v) => AppValidators.validatePassword(v, isLogin: _isLogin),
                     ),
                     if (!_isLogin) ...[
                       const SizedBox(height: 20),
@@ -283,8 +270,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: 40),
                     PremiumButton(
                       text: _isLogin ? 'Sign In' : 'Create Account',
-                      onPressed: _submit,
+                      onPressed: (!_isLogin && _locationLat == null) ? () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enable location to create your account'),
+                            backgroundColor: AppColors.warning,
+                          ),
+                        );
+                      } : _submit,
                       isLoading: _isLoading,
+                      color: (!_isLogin && _locationLat == null) ? AppColors.textDisabled : null,
                       icon: _isLogin ? Icons.login_rounded : Icons.person_add_rounded,
                     ),
                   ],
