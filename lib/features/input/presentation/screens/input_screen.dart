@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
 
 class InputScreen extends ConsumerStatefulWidget {
   const InputScreen({super.key});
@@ -17,6 +19,7 @@ class InputScreen extends ConsumerStatefulWidget {
 class _InputScreenState extends ConsumerState<InputScreen> {
   final _formKey = GlobalKey<FormState>();
   final _queryController = TextEditingController();
+  bool _isChecking = false;
 
   @override
   void dispose() {
@@ -27,15 +30,110 @@ class _InputScreenState extends ConsumerState<InputScreen> {
   void _handleSubmit() async {
     if (_queryController.text.trim().isEmpty) return;
 
-    // Start the submission process
-    ref
-        .read(serviceBookingProvider.notifier)
-        .submitQuery(_queryController.text);
+    final user = ref.read(sessionNotifierProvider);
+    if (user == null) return;
 
-    // Navigate immediately to the AI Understanding screen
-    if (mounted) {
-      context.go('/ai-understanding');
+    setState(() => _isChecking = true);
+
+    try {
+      // PRO-CHECK: Prevent multiple active bookings to save API limits & prevent misuse
+      final activeBookings = await Supabase.instance.client
+          .from('Bookings')
+          .select('id')
+          .eq('user_id', user.id)
+          .not('status', 'in', ['cancelled', 'completed'])
+          .limit(1);
+
+      if (activeBookings.isNotEmpty) {
+        if (mounted) {
+          _showActiveBookingAlert();
+        }
+        return;
+      }
+
+      // Start the submission process
+      ref
+          .read(serviceBookingProvider.notifier)
+          .submitQuery(_queryController.text);
+
+      // Navigate immediately to the AI Understanding screen
+      if (mounted) {
+        context.go('/ai-understanding');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error checking status: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isChecking = false);
     }
+  }
+
+  void _showActiveBookingAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Active Request',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 20,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'You already have an active service request in progress. Please complete or cancel it before starting a new one.',
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary, 
+            height: 1.5,
+            fontSize: 14,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Close',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textSecondary, 
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: PremiumButton(
+                  text: 'View Tracking',
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.go('/tracking');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -71,7 +169,7 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                       PremiumButton(
                         text: 'Find Service Provider',
                         icon: Icons.search_rounded,
-                        isLoading: bookingState.isLoading,
+                        isLoading: bookingState.isLoading || _isChecking,
                         onPressed: _handleSubmit,
                       ),
                       const SizedBox(height: 40),

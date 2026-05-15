@@ -90,8 +90,15 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                 if (widget.bookingId != null) {
                   bookings = allBookings.where((b) => b['id'] == widget.bookingId).toList();
                 } else {
-                  // Filter out cancelled ones when looking for the latest active booking
-                  bookings = allBookings.where((b) => b['status'] != 'cancelled').take(1).toList();
+                  // DEFAULT VIEW: Only show truly active bookings
+                  // Filter out BOTH cancelled and completed when looking for the "Live" booking
+                  bookings = allBookings
+                      .where((b) => 
+                        b['status'] != 'cancelled' && 
+                        b['status'] != 'completed'
+                      )
+                      .take(1)
+                      .toList();
                 }
 
                 if (bookings.isEmpty) {
@@ -264,11 +271,40 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
 
   Widget _buildTimeline(String currentStatus) {
     final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
-    final currentIndex = steps.indexOf(currentStatus);
+    
+    // If cancelled, show everything as disabled except the cancelled indicator
+    final currentIndex = currentStatus == 'cancelled' ? -2 : steps.indexOf(currentStatus);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (currentStatus == 'cancelled') ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: AppColors.error),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'This booking was cancelled and is no longer active.',
+                    style: GoogleFonts.inter(
+                      color: AppColors.error,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
         Text(
           'SERVICE JOURNEY',
           style: GoogleFonts.inter(
@@ -285,18 +321,32 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
           final isActive = index == currentIndex;
           final isLast = index == steps.length - 1;
 
+          // Special case for cancelled: all steps look "cancelled/dimmed"
+          final isCancelled = currentStatus == 'cancelled';
+
           return _buildTimelineItem(
             step.replaceAll('_', ' ').toUpperCase(),
             isDone: isDone,
             isActive: isActive,
             isLast: isLast,
+            isDimmed: isCancelled,
           );
         }),
       ],
     );
   }
 
-  Widget _buildTimelineItem(String title, {required bool isDone, bool isActive = false, bool isLast = false}) {
+  Widget _buildTimelineItem(String title, {
+    required bool isDone, 
+    bool isActive = false, 
+    bool isLast = false,
+    bool isDimmed = false,
+  }) {
+    final Color primaryColor = isDimmed ? AppColors.textDisabled.withValues(alpha: 0.3) : AppColors.primary;
+    final Color textColor = isDimmed 
+        ? AppColors.textDisabled 
+        : (isDone || isActive ? AppColors.textPrimary : AppColors.textDisabled);
+
     return IntrinsicHeight(
       child: Row(
         children: [
@@ -306,21 +356,23 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: isDone ? AppColors.primary : (isActive ? AppColors.primary.withValues(alpha: 0.2) : Colors.white),
+                  color: isDone && !isDimmed ? primaryColor : (isActive && !isDimmed ? primaryColor.withValues(alpha: 0.2) : Colors.white),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDone || isActive ? AppColors.primary : AppColors.textDisabled.withValues(alpha: 0.3),
+                    color: (isDone || isActive) && !isDimmed ? primaryColor : AppColors.textDisabled.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
-                child: isDone ? const Icon(Icons.check, size: 12, color: Colors.white) : (isActive ? Center(child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle))) : null),
+                child: isDone && !isDimmed 
+                    ? const Icon(Icons.check, size: 12, color: Colors.white) 
+                    : (isActive && !isDimmed ? Center(child: Container(width: 8, height: 8, decoration: BoxDecoration(color: primaryColor, shape: BoxShape.circle))) : null),
               ),
               if (!isLast)
                 Expanded(
                   child: Container(
                     width: 2,
                     margin: const EdgeInsets.symmetric(vertical: 4),
-                    color: isDone ? AppColors.primary : AppColors.textDisabled.withValues(alpha: 0.1),
+                    color: isDone && !isDimmed ? primaryColor : AppColors.textDisabled.withValues(alpha: 0.1),
                   ),
                 ),
             ],
@@ -334,8 +386,8 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                   title,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
-                    fontWeight: isDone || isActive ? FontWeight.w800 : FontWeight.w600,
-                    color: isDone || isActive ? AppColors.textPrimary : AppColors.textDisabled,
+                    fontWeight: (isDone || isActive) && !isDimmed ? FontWeight.w800 : FontWeight.w600,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 24),
