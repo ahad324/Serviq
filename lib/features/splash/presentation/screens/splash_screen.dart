@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (mounted) {
-      context.go('/');
+      context.go('/input');
     }
   }
 
@@ -54,14 +54,14 @@ class _SplashScreenState extends State<SplashScreen> {
           Positioned(
             top: -100,
             right: -100,
-            child: _buildGlow(AppColors.primary.withOpacity(0.08)),
-          ).animate().fadeIn(duration: 1000.ms).scale(begin: const Offset(0.5, 0.5)),
+            child: _buildGlow(AppColors.primary.withValues(alpha: 0.08)),
+          ).animate().fadeIn(duration: 1000.milliseconds).scale(begin: const Offset(0.5, 0.5)),
           
           Positioned(
             bottom: -50,
             left: -50,
-            child: _buildGlow(AppColors.accent.withOpacity(0.05)),
-          ).animate().fadeIn(duration: 1200.ms, delay: 400.ms),
+            child: _buildGlow(AppColors.accent.withValues(alpha: 0.05)),
+          ).animate().fadeIn(duration: 1200.milliseconds, delay: 400.milliseconds),
           
           Center(
             child: Column(
@@ -69,9 +69,9 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 const AppLogo(size: 32)
                     .animate()
-                    .fadeIn(duration: 800.ms)
+                    .fadeIn(duration: 800.milliseconds)
                     .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut)
-                    .shimmer(delay: 1200.ms, duration: 1500.ms, color: AppColors.primaryLight),
+                    .shimmer(delay: 1200.milliseconds, duration: 1500.milliseconds, color: AppColors.primaryLight),
                 const SizedBox(height: 24),
                 
                 // Progress Bar
@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                     ),
                   ),
-                ).animate().fadeIn(delay: 600.ms),
+                ).animate().fadeIn(delay: 600.milliseconds),
                 
                 const SizedBox(height: 16),
                 
@@ -123,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   letterSpacing: 2,
                 ),
               ),
-            ).animate().fadeIn(delay: 2000.ms),
+            ).animate().fadeIn(delay: 2000.milliseconds),
           ),
         ],
       ),
@@ -137,7 +137,7 @@ class _SplashScreenState extends State<SplashScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [color, color.withOpacity(0)],
+          colors: [color, color.withValues(alpha: 0)],
         ),
       ),
     );

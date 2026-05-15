@@ -1,73 +1,82 @@
 # 🗂️ 6. BACKEND SCHEMA (FINAL)
 
-
+url: https://n8n-production-b9127.up.railway.app/webhook/service-request
 new query format
 {
-"query": "i need a plumber in green town around 3am",
-    "test":false,
+    "query": "i need a plumber in green town around 3am",
+    "test":false,(keep this true for now)
     "longitude":31.568490,
     "latitude":74.29166
 }
-we just needed some things mroe so please make accordingly to this one
+we just needed some things more so please make accordingly to this one
 
 this is our new response format
-[{
+{
     "success": true,
+    "count": 3,
     "providers": [{
-        "id": "ChIJh8qBUFAbGTkR7QThCwjhD1k",
-        "name": "APC / Power Kingdom pvt Ltd.",
-        "service_type": "service",
+        "id": "ChIJ4VYxkYX_GDkRE-A0i01urHs",
+        "name": "Crown sanitary electric and hardware store Bahria Town Lahore",
+        "service_type": "manufacturer",
         "rating": 4.8,
-        "reviews": 20,
-        "phone": "0333 1550333",
-        "address": "Mall Road, Panoramic hotel, 54 Mall Avenue, Garhi Shahu, Lahore, 54000, Pakistan",
+        "reviews": 109,
+        "phone": "0306 4600689",
+        "address": "239b commercial, Tulip Extension Tulip Block Sector C Bahria Town, Lahore, 53720, Pakistan",
         "location": {
-            "lat": 31.561684399999997,
-            "lng": 74.3217882
+            "lat": 31.368113499999996,
+            "lng": 74.1869404
         },
-        "maps_url": "https://maps.google.com/?cid=6417595418701530349&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
-        "website": "http://www.powerkingdom.com.pk/",
-        "reason_for_choosen": "Regular Customer of APC UPS from Power Kingdom.\nUsman Sb very nice and cooperative person.\nExcellent experience\nRecommend"
+        "maps_url": "https://maps.google.com/?cid=8911619041986404371&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": null,
+        "reason_for_chosen": {
+            "text": "Complete one stop shop for house hold accessories and maintenance. Good variety of electrical sanitary and hardware range. Also available home decor and lighting range modern sanitary and kitchen equipment available. Highly recommended",
+            "languageCode": "en"
+        }
     }, {
-        "id": "ChIJDzJH8nwDGTkR1XnqCWtEnu8",
-        "name": "Arif plumbing services",
-        "service_type": "plumber",
+        "id": "ChIJudHcgsz_GDkRvoJWQF01XD4",
+        "name": "Electrical Solutions",
+        "service_type": "service",
         "rating": 4.9,
-        "reviews": 177,
-        "phone": "0300 4312739",
-        "address": "Tyfon Street, Aftab Park, Bund Road, Kot Kamboh Lahore, 54000, Pakistan",
+        "reviews": 115,
+        "phone": "0314 7542749",
+        "address": "Shop#7 Al fazal market AA Block, D Aa Block Sector D Bahria Town, Lahore, 53720, Pakistan",
         "location": {
-            "lat": 31.535005599999998,
-            "lng": 74.2761943
+            "lat": 31.376456800000003,
+            "lng": 74.16997099999999
         },
-        "maps_url": "https://maps.google.com/?cid=17266313247903611349&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
-        "website": "https://arifplumbingservices.com/",
-        "reason_for_choosen": "Plumber arrived in 30 minutes, fixed the pipe efficiently with quality parts, and cleaned up afterward—no mess left. Professional, affordable"
+        "maps_url": "https://maps.google.com/?cid=4493525202836554430&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": "https://eselectrician.com/",
+        "reason_for_chosen": {
+            "text": "One of the best electrician Service in Bahria Town, they came within 5 minutes and fixed My AC",
+            "languageCode": "en"
+        }
     }, {
-        "id": "ChIJNVexWN0FGTkRu9re0WYEd_c",
-        "name": "Delite Electronics",
+        "id": "ChIJabOroIT_GDkRUhIFkz8EsoE",
+        "name": "Home Secure Electrics",
         "service_type": "electrician",
-        "rating": 4.4,
-        "reviews": 37,
-        "phone": "(042) 37429240",
-        "address": "Qartaba Chowk, Abid Market, Queen's Road, Jinnah Town, Lahore, 54000, Pakistan",
+        "rating": 5,
+        "reviews": 148,
+        "phone": "0315 7863835",
+        "address": "Shop Number 4, AA-Block Aa Block Sector D Bahria Town, Lahore, 53720, Pakistan",
         "location": {
-            "lat": 31.549062499999998,
-            "lng": 74.31593749999999
+            "lat": 31.376400600000004,
+            "lng": 74.17014240000002
         },
-        "maps_url": "https://maps.google.com/?cid=17831726089250986683&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
-        "website": "http://www.delite.com.pk/",
-        "reason_for_choosen": "They are a brand outlet of delite, but they offer a wide variety of products from other brands, too.\nYou can find cooking ranges, microwave ovens, oven hoods, LED screens, refrigerators, fridge, freezer, geysers, and many more electronics products of your choice under one roof.\nThey team is cooperative and guided us well and provided a discount as well."
+        "maps_url": "https://maps.google.com/?cid=9345536847843234386&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": "https://homesecureelectrics.com/",
+        "reason_for_chosen": {
+            "text": "Good service and good work best employee and frindly behaviour",
+            "languageCode": "en"
+        }
     }],
     "intent": {
-        "service": "electrical",
+        "service": "plumbing",
+        "google_place_type": "plumber",
+        "urgency": "normal",
+        "urgency_multiplier": 1,
+        "confidence": 0.9,
         "preferred_time": null,
-        "urgency": "standard",
-        "budget_max": null,
-        "notes": "Location: Sanda, Lahore",
-        "confidence": 0.98,
-        "google_place_type": "electrician",
-        "urgency_multiplier": 1
+        "notes": null
     }
-}]
+}
 so make accordingly to this now

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
+import 'package:serviq/features/matching/domain/models/service_response.dart';
 
 class AIUnderstandingScreen extends ConsumerWidget {
   const AIUnderstandingScreen({super.key});
@@ -23,7 +24,7 @@ class AIUnderstandingScreen extends ConsumerWidget {
             
             // Auto-navigate to provider list after analysis
             Future.delayed(const Duration(seconds: 3), () {
-              if (context.mounted) context.go('/provider-list');
+              if (context.mounted) context.go('/providers');
             });
 
             return Center(
@@ -34,13 +35,16 @@ class AIUnderstandingScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const AppLogo(size: 14),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: AppLogo(size: 14),
+                      ),
                       const Spacer(),
                       _buildAILoader(),
                       const SizedBox(height: 48),
                       _buildAnalysisText(booking),
                       const Spacer(),
-                      _buildConfidenceMeter(booking.meta.confidence),
+                      _buildConfidenceMeter(booking.intent.confidence),
                       const SizedBox(height: 40),
                     ],
                   ),
@@ -104,7 +108,7 @@ class AIUnderstandingScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                booking.service.toUpperCase(),
+                booking.intent.service.toUpperCase(),
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,

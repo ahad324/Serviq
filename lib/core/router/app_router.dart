@@ -11,6 +11,7 @@ import 'package:serviq/features/auth/presentation/screens/auth_screen.dart';
 import 'package:serviq/features/common/presentation/screens/profile_screen.dart';
 import 'package:serviq/features/booking/presentation/screens/booking_history_screen.dart';
 import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
+import 'package:serviq/features/splash/presentation/screens/splash_screen.dart';
 import 'package:serviq/core/widgets/bottom_nav_bar.dart';
 import 'package:serviq/core/widgets/not_found_screen.dart';
 
@@ -22,18 +23,23 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: user != null ? '/input' : '/auth',
+    initialLocation: '/',
     redirect: (context, state) {
       final isLoggedIn = user != null;
       final isAuthRoute = state.matchedLocation == '/auth';
 
-      if (!isLoggedIn && !isAuthRoute) return '/auth';
+      if (!isLoggedIn && !isAuthRoute && state.matchedLocation != '/') return '/auth';
       if (isLoggedIn && isAuthRoute) return '/input';
-      if (state.matchedLocation == '/') return '/input';
+      if (state.matchedLocation == '/') return null; // Let the splash screen show
       return null;
     },
     errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
+      GoRoute(
+        path: '/',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/auth',
         parentNavigatorKey: _rootNavigatorKey,
@@ -61,7 +67,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AIUnderstandingScreen(),
       ),
       GoRoute(
-        path: '/provider-list',
+        path: '/providers',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ProviderListScreen(),
       ),

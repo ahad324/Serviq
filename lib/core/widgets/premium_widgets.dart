@@ -139,42 +139,45 @@ class AppLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: size * 4,
-          height: size * 4,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(size),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Icon(
-            Icons.bolt_rounded,
-            color: Colors.white,
-            size: size * 2.5,
-          ),
-        ),
-        if (showText) ...[
-          const SizedBox(width: 12),
-          Text(
-            'SERVIQ',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: size * 2.2,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-              letterSpacing: 2,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: size * 4,
+            height: size * 4,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(size),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.bolt_rounded,
+              color: Colors.white,
+              size: size * 2.5,
             ),
           ),
+          if (showText) ...[
+            const SizedBox(width: 12),
+            Text(
+              'SERVIQ',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: size * 2.2,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textPrimary,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
