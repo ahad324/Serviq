@@ -18,6 +18,30 @@ class AIUnderstandingScreen extends ConsumerStatefulWidget {
 
 class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
   bool _analysisComplete = false;
+  int _currentStep = 0;
+  final List<String> _steps = [
+    'Analyzing your request...',
+    'Matching with local experts...',
+    'Estimating the best rates...',
+    'Finalizing details...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _startSteps();
+  }
+
+  void _startSteps() async {
+    for (int i = 0; i < _steps.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (mounted) {
+        setState(() {
+          _currentStep = i;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,87 +49,132 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildAnalysisIcon(bookingState.isLoading),
-                  const SizedBox(height: 48),
-                  Text(
-                    bookingState.isLoading ? 'Processing Request' : 'Analysis Complete',
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildAnalysisText(bookingState),
-                  const SizedBox(height: 60),
-                  if (_analysisComplete)
-                    PremiumButton(
-                      text: 'View Best Match',
-                      icon: Icons.arrow_forward_rounded,
-                      onPressed: () => context.go('/confirmation'),
-                    ).animate().fadeIn().moveY(begin: 20, end: 0)
-                  else if (bookingState.hasError)
-                     PremiumButton(
-                      text: 'Try Again',
-                      icon: Icons.refresh_rounded,
-                      onPressed: () => context.go('/input'),
-                    ).animate().fadeIn(),
-                ],
+      body: Stack(
+        children: [
+          // Background Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topRight,
+                  radius: 1.5,
+                  colors: [
+                    AppColors.primary.withOpacity(0.05),
+                    AppColors.background,
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+          
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildAnalysisIcon(bookingState.isLoading),
+                      const SizedBox(height: 48),
+                      Text(
+                        bookingState.isLoading ? 'Processing Request' : 'Analysis Complete',
+                        style: GoogleFonts.outfit(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ).animate().fadeIn().scale(),
+                      const SizedBox(height: 16),
+                      
+                      // Animated Step Text
+                      SizedBox(
+                        height: 24,
+                        child: AnimatedSwitcher(
+                          duration: 500.ms,
+                          transitionBuilder: (child, animation) => FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(animation),
+                              child: child,
+                            ),
+                          ),
+                          child: Text(
+                            _steps[_currentStep % _steps.length],
+                            key: ValueKey(_currentStep),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      _buildAnalysisText(bookingState),
+                      const SizedBox(height: 60),
+                      
+                      if (_analysisComplete)
+                        PremiumButton(
+                          text: 'View Best Match',
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: () => context.go('/confirmation'),
+                        ).animate().fadeIn().moveY(begin: 20, end: 0)
+                      else if (bookingState.hasError)
+                         PremiumButton(
+                          text: 'Try Again',
+                          icon: Icons.refresh_rounded,
+                          onPressed: () => context.go('/input'),
+                        ).animate().fadeIn(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildAnalysisIcon(bool isLoading) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
+    return Container(
+      width: 140,
+      height: 140,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
             color: AppColors.primary.withOpacity(0.1),
-            shape: BoxShape.circle,
+            blurRadius: 30,
+            spreadRadius: 5,
           ),
-        )
-            .animate(onPlay: (controller) => controller.repeat())
-            .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 2.seconds, curve: Curves.easeInOut)
-            .then()
-            .scale(begin: const Offset(1.2, 1.2), end: const Offset(1, 1), duration: 2.seconds, curve: Curves.easeInOut),
-        
-        Container(
-          width: 80,
-          height: 80,
-          decoration: const BoxDecoration(
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (isLoading)
+            const PremiumLoadingIndicator(size: 140)
+          else
+            const Icon(
+              Icons.check_rounded,
+              color: AppColors.primary,
+              size: 60,
+            ).animate().scale(duration: 400.ms, curve: Curves.backOut),
+            
+          const Icon(
+            Icons.psychology_rounded,
             color: AppColors.primary,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary,
-                blurRadius: 20,
-                spreadRadius: -5,
-              ),
-            ],
-          ),
-          child: Icon(
-            isLoading ? Icons.psychology_rounded : Icons.check_rounded,
-            color: Colors.white,
-            size: 40,
-          ),
-        ),
-      ],
+            size: 48,
+          ).animate(onPlay: (c) => c.repeat())
+           .shimmer(duration: 2.seconds, color: Colors.white.withOpacity(0.5)),
+        ],
+      ),
     );
   }
 

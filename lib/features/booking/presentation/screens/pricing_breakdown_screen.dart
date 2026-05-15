@@ -31,52 +31,74 @@ class PricingBreakdownScreen extends ConsumerWidget {
           
           final pricing = booking.pricing;
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProviderHeader(booking.provider),
-                const SizedBox(height: 40),
-                Text(
-                  'BILL SUMMARY',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDisabled,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                PremiumCard(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      ...pricing.breakdown.map((item) => _buildPriceRow(item.label, item.amount, pricing.currency)),
-                      const SizedBox(height: 16),
-                      const Divider(color: AppColors.surfaceDark),
-                      const SizedBox(height: 16),
-                      _buildPriceRow(
-                        'Grand Total',
-                        pricing.grandTotal,
-                        pricing.currency,
-                        isTotal: true,
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProviderHeader(booking.provider),
+                    const SizedBox(height: 40),
+                    Text(
+                      'BILL SUMMARY',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textDisabled,
+                        letterSpacing: 1.5,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    PremiumCard(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          ...pricing.breakdown.map((item) => _buildPriceRow(item.label, item.amount, pricing.currency)),
+                          const SizedBox(height: 16),
+                          const Divider(color: AppColors.surfaceDark),
+                          const SizedBox(height: 16),
+                          _buildPriceRow(
+                            'Grand Total',
+                            pricing.grandTotal,
+                            pricing.currency,
+                            isTotal: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    PremiumButton(
+                      text: 'Confirm & Book Now',
+                      icon: Icons.check_circle_rounded,
+                      onPressed: () => context.go('/booking-confirmation'),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                const Spacer(),
-                PremiumButton(
-                  text: 'Confirm & Book Now',
-                  icon: Icons.check_circle_rounded,
-                  onPressed: () => context.go('/booking-confirmation'),
-                ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const PremiumLoadingIndicator(),
+              const SizedBox(height: 24),
+              Text(
+                'Calculating estimates...',
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
         error: (e, st) => Center(child: Text('Error: $e')),
       ),
     );

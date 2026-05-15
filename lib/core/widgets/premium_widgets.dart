@@ -76,7 +76,7 @@ class PremiumButton extends StatelessWidget {
             ? const SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: PremiumLoadingIndicator(color: Colors.white, size: 24),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -154,15 +154,27 @@ class AppLogo extends StatelessWidget {
 class ScreenHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
+  final Widget? trailing;
 
-  const ScreenHeader({super.key, required this.title, this.subtitle});
+  const ScreenHeader({
+    super.key, 
+    required this.title, 
+    this.subtitle,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppLogo(size: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const AppLogo(size: 14),
+            if (trailing != null) trailing!,
+          ],
+        ),
         const SizedBox(height: 24),
         Text(
           title,
@@ -185,6 +197,101 @@ class ScreenHeader extends StatelessWidget {
           ),
         ],
       ],
+    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05);
+  }
+}
+
+class PremiumLoadingIndicator extends StatelessWidget {
+  final Color? color;
+  final double size;
+
+  const PremiumLoadingIndicator({super.key, this.color, this.size = 40});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            strokeWidth: 2,
+            color: color ?? AppColors.primary,
+          ),
+          Container(
+            width: size * 0.4,
+            height: size * 0.4,
+            decoration: BoxDecoration(
+              color: (color ?? AppColors.primary).withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+          ).animate(onPlay: (controller) => controller.repeat())
+           .scale(begin: const Offset(0.5, 0.5), end: const Offset(1.2, 1.2), duration: 1000.ms, curve: Curves.easeInOut)
+           .fadeOut(duration: 1000.ms),
+        ],
+      ),
+    );
+  }
+}
+
+
+class StatusBadge extends StatelessWidget {
+  final String text;
+  final Color? color;
+
+  const StatusBadge({
+    super.key, 
+    required this.text,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = color ?? AppColors.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: baseColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: baseColor.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: baseColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: baseColor.withOpacity(0.5),
+                  blurRadius: 4,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+          ).animate(onPlay: (controller) => controller.repeat())
+           .fadeIn(duration: 600.ms)
+           .then()
+           .fadeOut(duration: 600.ms),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: baseColor,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -163,3 +163,90 @@ and this is the response
     }
 }
 so be accordingly to this and for now rely on this mock data but make it alll so flexible that in future ill just need to add the api url in my en that's it so be accordingly perfect.
+
+
+this is our new response format
+{
+    "success": true,
+    "providers": [{
+        "id": "ChIJDzJH8nwDGTkR1XnqCWtEnu8",
+        "name": "Arif plumbing services",
+        "service_type": "plumber",
+        "rating": 4.9,
+        "reviews": 177,
+        "phone": "0300 4312739",
+        "address": "Tyfon Street, Aftab Park, Bund Road, Kot Kamboh Lahore, 54000, Pakistan",
+        "location": {
+            "lat": 31.535005599999998,
+            "lng": 74.2761943
+        },
+        "maps_url": "https://maps.google.com/?cid=17266313247903611349&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": "https://arifplumbingservices.com/"
+    }, {
+        "id": "ChIJibsLRJMDGTkRR-MJCKw1KBM",
+        "name": "Zubair Plumbing Services",
+        "service_type": "plumber",
+        "rating": 4.9,
+        "reviews": 275,
+        "phone": "0312 4740940",
+        "address": "Hazir & sons Sanitary Store, 196-A, Scheme Mor Multan Rd, Sabzazar Lahore, 54500, Pakistan",
+        "location": {
+            "lat": 31.5267496,
+            "lng": 74.2837639
+        },
+        "maps_url": "https://maps.google.com/?cid=1380412298774569799&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": "http://zplumbings.online/"
+    }, {
+        "id": "ChIJo0b4bE8DGTkRhvQbHTkKIbw",
+        "name": "Asif plumbing services",
+        "service_type": "plumber",
+        "rating": 4.8,
+        "reviews": 118,
+        "phone": "0301 5404356",
+        "address": "196A M, Hazir & Sons, Multan Rd, Dholanwal Lahore, 54570, Pakistan",
+        "location": {
+            "lat": 31.5262946,
+            "lng": 74.28344059999999
+        },
+        "maps_url": "https://maps.google.com/?cid=13556127593779688582&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": null
+    }, {
+        "id": "ChIJuwq-RXMDGTkRmYFZOFFKuUg",
+        "name": "Lahore Electrician",
+        "service_type": "electrician",
+        "rating": 5,
+        "reviews": 14,
+        "phone": "0305 7220020",
+        "address": "D16, P&t Colony Riwaz garden, Lahore, 54510, Pakistan",
+        "location": {
+            "lat": 31.546963899999998,
+            "lng": 74.2954249
+        },
+        "maps_url": "https://maps.google.com/?cid=5240301354120479129&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": "https://allinonedownloader.weebly.com/facebook-video-downloader.html"
+    }, {
+        "id": "ChIJkcSeAAoBGTkRPIxJP0iALhE",
+        "name": "MCE SERVICES (Bilalgunj NO.1 Service Center)",
+        "service_type": "general_contractor",
+        "rating": 5,
+        "reviews": 9,
+        "phone": "0308 3111122",
+        "address": "Office #10-A Razzaq Street, Choudhary Park, 23 Rashid Rd, Bilal Ganj, Lahore, 54000, Pakistan",
+        "location": {
+            "lat": 31.582551700000003,
+            "lng": 74.29511459999999
+        },
+        "maps_url": "https://maps.google.com/?cid=1238067995361250364&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website": "http://masterservices.pk/"
+    }],
+    "intent": {
+        "service": "plumbing",
+        "preferred_time": "20:00",
+        "urgency": "normal",
+        "budget_max": null,
+        "notes": "wapda town",
+        "confidence": 0.95,
+        "google_place_type": "plumber",
+        "urgency_multiplier": 1
+    }
+}

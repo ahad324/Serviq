@@ -29,17 +29,39 @@ class ProviderListScreen extends ConsumerWidget {
         data: (booking) {
           if (booking == null) return const SizedBox.shrink();
           
-          return ListView.separated(
-            padding: const EdgeInsets.all(24),
-            itemCount: 1, 
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final provider = booking.provider;
-              return _buildProviderCard(context, provider, booking.decisionReasoning.selectedBecause);
-            },
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: ListView.separated(
+                padding: const EdgeInsets.all(24),
+                itemCount: 1, 
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final provider = booking.provider;
+                  return _buildProviderCard(context, provider, booking.decisionReasoning.selectedBecause);
+                },
+              ),
+            ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const PremiumLoadingIndicator(),
+              const SizedBox(height: 24),
+              Text(
+                'Searching for experts...',
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
         error: (e, st) => Center(child: Text('Error: $e')),
       ),
     );

@@ -32,11 +32,10 @@ class TrackingScreen extends ConsumerWidget {
           if (booking == null) return const SizedBox.shrink();
           
           final lifecycle = booking.lifecycle;
-          // Dynamically fetch arrival ETA. Fallback to 'TBD' if missing.
-          final arrivalEta = lifecycle.arrival.eta;
-          final etaStr = arrivalEta != null 
-              ? '${DateFormat('hh:mm a').format(arrivalEta)} Today'
-              : 'TBD';
+          // Calculate dynamic ETA: 15 mins from confirmation if not provided
+          final confirmedAt = lifecycle.confirmed.at ?? DateTime.now();
+          final etaTime = lifecycle.arrival.eta ?? confirmedAt.add(const Duration(minutes: 15));
+          final etaStr = '${etaTime.hour.toString().padLeft(2, '0')}:${etaTime.minute.toString().padLeft(2, '0')} Today';
 
           return SingleChildScrollView(
             child: Center(
