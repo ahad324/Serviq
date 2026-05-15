@@ -55,7 +55,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const InputScreen()),
-          GoRoute(path: '/tracking', builder: (context, state) => const TrackingScreen()),
+          GoRoute(
+            path: '/tracking',
+            builder: (context, state) {
+              final bookingId = state.extra as String?;
+              return TrackingScreen(bookingId: bookingId);
+            },
+          ),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
           GoRoute(path: '/booking-history', builder: (context, state) => const BookingHistoryScreen()),
         ],

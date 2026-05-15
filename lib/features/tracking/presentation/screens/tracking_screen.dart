@@ -9,7 +9,8 @@ import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
 
 class TrackingScreen extends ConsumerStatefulWidget {
-  const TrackingScreen({super.key});
+  final String? bookingId;
+  const TrackingScreen({super.key, this.bookingId});
 
   @override
   ConsumerState<TrackingScreen> createState() => _TrackingScreenState();
@@ -56,18 +57,25 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     final user = ref.watch(sessionNotifierProvider);
     final supabase = Supabase.instance.client;
 
+    final stream = widget.bookingId != null
+        ? supabase
+            .from('Bookings')
+            .stream(primaryKey: ['id'])
+            .eq('id', widget.bookingId!)
+        : supabase
+            .from('Bookings')
+            .stream(primaryKey: ['id'])
+            .eq('user_id', user?.id ?? '')
+            .order('created_at', ascending: false)
+            .limit(10); // Fetch a few to filter client-side
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Stack(
           children: [
             StreamBuilder<List<Map<String, dynamic>>>(
-              stream: supabase
-                  .from('Bookings')
-                  .stream(primaryKey: ['id'])
-                  .eq('user_id', user?.id ?? '')
-                  .order('created_at', ascending: false)
-                  .limit(1),
+              stream: stream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const PremiumLoadingIndicator();
@@ -76,7 +84,16 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 
-                final bookings = snapshot.data ?? [];
+                final allBookings = snapshot.data ?? [];
+                final List<Map<String, dynamic>> bookings;
+                
+                if (widget.bookingId != null) {
+                  bookings = allBookings.where((b) => b['id'] == widget.bookingId).toList();
+                } else {
+                  // Filter out cancelled ones when looking for the latest active booking
+                  bookings = allBookings.where((b) => b['status'] != 'cancelled').take(1).toList();
+                }
+
                 if (bookings.isEmpty) {
                   return Center(
                     child: Column(
@@ -161,6 +178,11 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     double progress = 0.2;
 
     switch (status) {
+      case 'cancelled':
+        statusTitle = 'Booking Cancelled';
+        subText = 'This service request was cancelled';
+        progress = 0.0;
+        break;
       case 'confirmed':
         statusTitle = 'Booking Confirmed';
         subText = 'A professional is being assigned';
@@ -203,7 +225,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: status == 'cancelled' ? AppColors.error : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -217,15 +239,21 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                   ],
                 ),
               ),
-              if (status != 'completed')
+              if (status != 'completed' && status != 'cancelled')
                 const PremiumLoadingIndicator(size: 24),
+              if (status == 'cancelled')
+                const Icon(Icons.cancel_rounded, color: AppColors.error, size: 32),
             ],
           ),
           const SizedBox(height: 24),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+            backgroundColor: status == 'cancelled' 
+                ? AppColors.error.withValues(alpha: 0.1) 
+                : AppColors.primary.withValues(alpha: 0.1),
+            valueColor: AlwaysStoppedAnimation<Color>(
+                status == 'cancelled' ? AppColors.error : AppColors.primary
+            ),
             borderRadius: BorderRadius.circular(4),
             minHeight: 8,
           ),
@@ -375,6 +403,14 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
   }
 
   Widget _buildActionButtons(String bookingId, String currentStatus) {
+    if (currentStatus == 'cancelled') {
+      return PremiumButton(
+        text: 'Book New Service',
+        onPressed: () => context.go('/home'),
+        icon: Icons.add_rounded,
+      );
+    }
+
     final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
     final currentIndex = steps.indexOf(currentStatus);
     
