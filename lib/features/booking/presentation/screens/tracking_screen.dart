@@ -6,14 +6,78 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
+import 'package:serviq/core/widgets/bottom_nav_bar.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
 
-class TrackingScreen extends ConsumerWidget {
+class TrackingScreen extends ConsumerStatefulWidget {
   const TrackingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TrackingScreen> createState() => _TrackingScreenState();
+}
+
+class _TrackingScreenState extends ConsumerState<TrackingScreen> {
+  late Map<String, bool> _stepStatus;
+  late Map<String, DateTime?> _stepTimes;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSteps();
+  }
+
+  void _initializeSteps() {
+    _stepStatus = {
+      'confirmed': true,
+      'en_route': true,
+      'arrived': false,
+      'in_progress': false,
+      'completed': false,
+    };
+    _stepTimes = {
+      'confirmed': DateTime.now(),
+      'en_route': DateTime.now().add(const Duration(minutes: 3)),
+      'arrived': null,
+      'in_progress': null,
+      'completed': null,
+    };
+  }
+
+  void _markStepDone(String step) {
+    setState(() {
+      _stepStatus[step] = true;
+      _stepTimes[step] = DateTime.now();
+    });
+
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('✓ $step marked as done'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  String _getNextIncompleteStep() {
+    final order = [
+      'confirmed',
+      'en_route',
+      'arrived',
+      'in_progress',
+      'completed',
+    ];
+    for (String step in order) {
+      if (!(_stepStatus[step] ?? false)) {
+        return step;
+      }
+    }
+    return 'completed';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final bookingState = ref.watch(serviceBookingProvider);
+    final nextStep = _getNextIncompleteStep();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -21,91 +85,132 @@ class TrackingScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const AppLogo(size: 14),
+        title: const AppLogo(size: 18),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
       body: bookingState.when(
         data: (booking) {
           if (booking == null) return const SizedBox.shrink();
-          
-          final lifecycle = booking.lifecycle;
-          // Dynamically fetch arrival ETA. Fallback to 'TBD' if missing.
-          final arrivalEta = lifecycle.arrival.eta;
-          final etaStr = arrivalEta != null 
-              ? '${DateFormat('hh:mm a').format(arrivalEta)} Today'
-              : 'TBD';
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStatusBanner(lifecycle.enRoute.message ?? 'Provider is en-route'),
-                const SizedBox(height: 40),
-                Text(
-                  'SERVICE TIMELINE',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDisabled,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildTimeline(lifecycle),
-                const SizedBox(height: 40),
-                PremiumCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+          final lifecycle = booking.lifecycle;
+          final confirmedAt = lifecycle.confirmed.at ?? DateTime.now();
+          final etaTime =
+              lifecycle.arrival.eta ??
+              confirmedAt.add(const Duration(minutes: 15));
+          final etaStr =
+              '${etaTime.hour.toString().padLeft(2, '0')}:${etaTime.minute.toString().padLeft(2, '0')} Today';
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 20,
                         ),
-                        child: const Icon(Icons.access_time_filled_rounded, color: AppColors.primary, size: 24),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Estimated Arrival',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildStatusBanner(
+                              lifecycle.enRoute.message ??
+                                  'Provider is en-route',
+                              nextStep,
                             ),
-                          ),
-                          Text(
-                            etaStr,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textPrimary,
+                            const SizedBox(height: 40),
+                            Text(
+                              'SERVICE TIMELINE',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.textDisabled,
+                                letterSpacing: 1.5,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 24),
+                            _buildTimeline(lifecycle, nextStep),
+                            const SizedBox(height: 40),
+                            PremiumCard(
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.access_time_filled_rounded,
+                                      color: AppColors.primary,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Estimated Arrival',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                      Text(
+                                        etaStr,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 40),
-              ],
-            ),
+              ),
+              BottomNavBar(currentRoute: '/tracking'),
+            ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (e, st) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  Widget _buildStatusBanner(String message) {
+  Widget _buildStatusBanner(String message, String nextStep) {
+    final stepLabels = {
+      'confirmed': 'Booking Confirmed',
+      'en_route': 'En Route',
+      'arrived': 'Arrived',
+      'in_progress': 'In Progress',
+      'completed': 'Completed',
+    };
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -148,68 +253,181 @@ class TrackingScreen extends ConsumerWidget {
               height: 1.2,
             ),
           ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Next: ${stepLabels[nextStep] ?? 'Complete'}',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     ).animate().fadeIn().slideY(begin: -0.1);
   }
 
-  Widget _buildTimeline(dynamic lifecycle) {
+  Widget _buildTimeline(dynamic lifecycle, String nextStep) {
     return Column(
       children: [
-        _buildTimelineItem('Booking Confirmed', true, isFirst: true),
-        _buildTimelineItem('Ali Repairs is En Route', true),
-        _buildTimelineItem('Arrival at Location', false),
-        _buildTimelineItem('Service In Progress', false),
-        _buildTimelineItem('Service Completed', false, isLast: true),
+        _buildTimelineItem(
+          'Booking Confirmed',
+          _stepStatus['confirmed'] ?? false,
+          isFirst: true,
+          isNext: nextStep == 'confirmed',
+          onMarkDone: () => _markStepDone('confirmed'),
+          time: _stepTimes['confirmed'],
+        ),
+        _buildTimelineItem(
+          'Ali Repairs is En Route',
+          _stepStatus['en_route'] ?? false,
+          isNext: nextStep == 'en_route',
+          onMarkDone: () => _markStepDone('en_route'),
+          time: _stepTimes['en_route'],
+        ),
+        _buildTimelineItem(
+          'Arrival at Location',
+          _stepStatus['arrived'] ?? false,
+          isNext: nextStep == 'arrived',
+          onMarkDone: () => _markStepDone('arrived'),
+          time: _stepTimes['arrived'],
+        ),
+        _buildTimelineItem(
+          'Service In Progress',
+          _stepStatus['in_progress'] ?? false,
+          isNext: nextStep == 'in_progress',
+          onMarkDone: () => _markStepDone('in_progress'),
+          time: _stepTimes['in_progress'],
+        ),
+        _buildTimelineItem(
+          'Service Completed',
+          _stepStatus['completed'] ?? false,
+          isLast: true,
+          isNext: nextStep == 'completed',
+          onMarkDone: () => _markStepDone('completed'),
+          time: _stepTimes['completed'],
+        ),
       ],
     );
   }
 
-  Widget _buildTimelineItem(String label, bool isCompleted, {bool isFirst = false, bool isLast = false}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTimelineItem(
+    String label,
+    bool isCompleted, {
+    bool isFirst = false,
+    bool isLast = false,
+    bool isNext = false,
+    VoidCallback? onMarkDone,
+    DateTime? time,
+  }) {
+    return Column(
       children: [
-        Column(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: isCompleted ? AppColors.primary : AppColors.background,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isCompleted ? AppColors.primary : AppColors.surfaceDark,
-                  width: 2,
+            Column(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? AppColors.primary
+                        : (isNext ? AppColors.accent : AppColors.background),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isCompleted
+                          ? AppColors.primary
+                          : (isNext ? AppColors.accent : AppColors.surfaceDark),
+                      width: 2,
+                    ),
+                  ),
+                  child: isCompleted
+                      ? const Icon(Icons.check, size: 14, color: Colors.white)
+                      : (isNext
+                            ? const Icon(
+                                Icons.play_arrow,
+                                size: 12,
+                                color: AppColors.accent,
+                              )
+                            : null),
                 ),
-              ),
-              child: isCompleted
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
-                  : null,
+                if (!isLast)
+                  Container(
+                    width: 2,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isCompleted
+                          ? AppColors.primary
+                          : AppColors.surfaceDark,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+              ],
             ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isCompleted ? AppColors.primary : AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(1),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: isCompleted
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isCompleted
+                            ? AppColors.textPrimary
+                            : AppColors.textDisabled,
+                      ),
+                    ),
+                    if (time != null)
+                      Text(
+                        DateFormat('hh:mm a').format(time),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    if (isNext && !isCompleted && onMarkDone != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: ElevatedButton.icon(
+                          onPressed: onMarkDone,
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                          ),
+                          label: const Text('Mark as Done'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            textStyle: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            ),
           ],
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: isCompleted ? FontWeight.w700 : FontWeight.w500,
-                color: isCompleted ? AppColors.textPrimary : AppColors.textDisabled,
-              ),
-            ),
-          ),
         ),
       ],
     ).animate().fadeIn(delay: 200.ms);

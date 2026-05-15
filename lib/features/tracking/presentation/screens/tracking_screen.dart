@@ -1,0 +1,500 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:serviq/core/theme/app_colors.dart';
+import 'package:serviq/core/widgets/premium_widgets.dart';
+import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
+
+class TrackingScreen extends ConsumerStatefulWidget {
+  final String? bookingId;
+  const TrackingScreen({super.key, this.bookingId});
+
+  @override
+  ConsumerState<TrackingScreen> createState() => _TrackingScreenState();
+}
+
+class _TrackingScreenState extends ConsumerState<TrackingScreen> {
+  bool _isUpdating = false;
+
+  Future<void> _updateStatus(String bookingId, String nextStatus) async {
+    setState(() => _isUpdating = true);
+    final supabase = Supabase.instance.client;
+
+    try {
+      await supabase
+          .from('Bookings')
+          .update({'status': nextStatus})
+          .eq('id', bookingId);
+
+      await supabase.from('booking_logs').insert({
+        'booking_id': bookingId,
+        'status': nextStatus,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+
+      // In a real app, we'd use a stream or refresh the provider
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✓ Status updated to ${nextStatus.replaceAll('_', ' ')}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating status: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(sessionNotifierProvider);
+    final supabase = Supabase.instance.client;
+
+    final stream = widget.bookingId != null
+        ? supabase
+            .from('Bookings')
+            .stream(primaryKey: ['id'])
+            .eq('id', widget.bookingId!)
+        : supabase
+            .from('Bookings')
+            .stream(primaryKey: ['id'])
+            .eq('user_id', user?.id ?? '')
+            .order('created_at', ascending: false)
+            .limit(10); // Fetch a few to filter client-side
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            StreamBuilder<List<Map<String, dynamic>>>(
+              stream: stream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const PremiumLoadingIndicator();
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                
+                final allBookings = snapshot.data ?? [];
+                final List<Map<String, dynamic>> bookings;
+                
+                if (widget.bookingId != null) {
+                  bookings = allBookings.where((b) => b['id'] == widget.bookingId).toList();
+                } else {
+                  // DEFAULT VIEW: Only show truly active bookings
+                  // Filter out BOTH cancelled and completed when looking for the "Live" booking
+                  bookings = allBookings
+                      .where((b) => 
+                        b['status'] != 'cancelled' && 
+                        b['status'] != 'completed'
+                      )
+                      .take(1)
+                      .toList();
+                }
+
+                if (bookings.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_searching_rounded, size: 64, color: AppColors.textDisabled.withValues(alpha: 0.5)),
+                        const SizedBox(height: 20),
+                        Text(
+                          'No active bookings to track',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Book a service to see live updates',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final booking = bookings.first;
+                final String currentStatus = booking['status'];
+                final String bookingId = booking['id'];
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 32),
+                      _buildStatusCard(currentStatus),
+                      const SizedBox(height: 32),
+                      _buildTimeline(currentStatus),
+                      const SizedBox(height: 32),
+                      _buildActionButtons(bookingId, currentStatus),
+                    ],
+                  ),
+                );
+              },
+            ),
+            if (_isUpdating)
+              Positioned.fill(
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(
+                      color: AppColors.background.withValues(alpha: 0.3),
+                      child: const Center(child: PremiumLoadingIndicator()),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppLogo(size: 12),
+        const SizedBox(height: 16),
+        const StatusBadge(text: 'LIVE TRACKING'),
+      ],
+    );
+  }
+
+  Widget _buildStatusCard(String status) {
+    String statusTitle = '';
+    String subText = '';
+    double progress = 0.2;
+
+    switch (status) {
+      case 'cancelled':
+        statusTitle = 'Booking Cancelled';
+        subText = 'This service request was cancelled';
+        progress = 0.0;
+        break;
+      case 'confirmed':
+        statusTitle = 'Booking Confirmed';
+        subText = 'A professional is being assigned';
+        progress = 0.2;
+        break;
+      case 'en_route':
+        statusTitle = 'Professional En Route';
+        subText = 'Arriving in approx. 15 mins';
+        progress = 0.4;
+        break;
+      case 'arrived':
+        statusTitle = 'Professional Arrived';
+        subText = 'Ready to start the service';
+        progress = 0.6;
+        break;
+      case 'in_progress':
+        statusTitle = 'Service In Progress';
+        subText = 'Your service is being handled';
+        progress = 0.8;
+        break;
+      case 'completed':
+        statusTitle = 'Service Completed';
+        subText = 'Hope you had a great experience!';
+        progress = 1.0;
+        break;
+    }
+
+    return PremiumCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      statusTitle,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: status == 'cancelled' ? AppColors.error : AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subText,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (status != 'completed' && status != 'cancelled')
+                const PremiumLoadingIndicator(size: 24),
+              if (status == 'cancelled')
+                const Icon(Icons.cancel_rounded, color: AppColors.error, size: 32),
+            ],
+          ),
+          const SizedBox(height: 24),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: status == 'cancelled' 
+                ? AppColors.error.withValues(alpha: 0.1) 
+                : AppColors.primary.withValues(alpha: 0.1),
+            valueColor: AlwaysStoppedAnimation<Color>(
+                status == 'cancelled' ? AppColors.error : AppColors.primary
+            ),
+            borderRadius: BorderRadius.circular(4),
+            minHeight: 8,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeline(String currentStatus) {
+    final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
+    
+    // If cancelled, show everything as disabled except the cancelled indicator
+    final currentIndex = currentStatus == 'cancelled' ? -2 : steps.indexOf(currentStatus);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (currentStatus == 'cancelled') ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: AppColors.error),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'This booking was cancelled and is no longer active.',
+                    style: GoogleFonts.inter(
+                      color: AppColors.error,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+        Text(
+          'SERVICE JOURNEY',
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            color: AppColors.textDisabled,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(height: 24),
+        ...List.generate(steps.length, (index) {
+          final step = steps[index];
+          final isDone = index < currentIndex;
+          final isActive = index == currentIndex;
+          final isLast = index == steps.length - 1;
+
+          // Special case for cancelled: all steps look "cancelled/dimmed"
+          final isCancelled = currentStatus == 'cancelled';
+
+          return _buildTimelineItem(
+            step.replaceAll('_', ' ').toUpperCase(),
+            isDone: isDone,
+            isActive: isActive,
+            isLast: isLast,
+            isDimmed: isCancelled,
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildTimelineItem(String title, {
+    required bool isDone, 
+    bool isActive = false, 
+    bool isLast = false,
+    bool isDimmed = false,
+  }) {
+    final Color primaryColor = isDimmed ? AppColors.textDisabled.withValues(alpha: 0.3) : AppColors.primary;
+    final Color textColor = isDimmed 
+        ? AppColors.textDisabled 
+        : (isDone || isActive ? AppColors.textPrimary : AppColors.textDisabled);
+
+    return IntrinsicHeight(
+      child: Row(
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: isDone && !isDimmed ? primaryColor : (isActive && !isDimmed ? primaryColor.withValues(alpha: 0.2) : Colors.white),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: (isDone || isActive) && !isDimmed ? primaryColor : AppColors.textDisabled.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+                child: isDone && !isDimmed 
+                    ? const Icon(Icons.check, size: 12, color: Colors.white) 
+                    : (isActive && !isDimmed ? Center(child: Container(width: 8, height: 8, decoration: BoxDecoration(color: primaryColor, shape: BoxShape.circle))) : null),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    color: isDone && !isDimmed ? primaryColor : AppColors.textDisabled.withValues(alpha: 0.1),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: (isDone || isActive) && !isDimmed ? FontWeight.w800 : FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _cancelBooking(String bookingId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Cancel Booking?',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800),
+        ),
+        content: Text(
+          'Are you sure you want to cancel this service request?',
+          style: GoogleFonts.inter(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Keep Booking', style: GoogleFonts.inter(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Yes, Cancel', style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isUpdating = true);
+    final supabase = Supabase.instance.client;
+
+    try {
+      await supabase
+          .from('Bookings')
+          .update({'status': 'cancelled'})
+          .eq('id', bookingId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('✓ Booking cancelled successfully')),
+        );
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error cancelling: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  Widget _buildActionButtons(String bookingId, String currentStatus) {
+    if (currentStatus == 'cancelled') {
+      return PremiumButton(
+        text: 'Book New Service',
+        onPressed: () => context.go('/home'),
+        icon: Icons.add_rounded,
+      );
+    }
+
+    final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
+    final currentIndex = steps.indexOf(currentStatus);
+    
+    if (currentIndex == steps.length - 1) {
+      return PremiumButton(
+        text: 'Rate Service',
+        onPressed: () {},
+        icon: Icons.star_rounded,
+      );
+    }
+
+    final nextStatus = steps[currentIndex + 1];
+    final buttonText = 'Mark as ${nextStatus.replaceAll('_', ' ')}';
+
+    return Column(
+      children: [
+        PremiumButton(
+          text: buttonText,
+          onPressed: () => _updateStatus(bookingId, nextStatus),
+          isLoading: _isUpdating,
+          icon: Icons.double_arrow_rounded,
+        ),
+        const SizedBox(height: 12),
+        if (currentIndex < 2) // Only allow cancellation before arrival
+          TextButton(
+            onPressed: () => _cancelBooking(bookingId),
+            child: Text(
+              'Cancel Booking',
+              style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.w600),
+            ),
+          ),
+      ],
+    );
+  }
+}

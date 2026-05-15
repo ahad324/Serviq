@@ -22,6 +22,10 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B);
   static const Color info = Color(0xFF3B82F6);
 
+  // Secondary brand color
+  static const Color secondary = Color(0xFFABD1C6);
+  static const Color secondaryLight = Color(0xFFE8E8E8);
+
   // Accent colors
   static const Color accent = Color(0xFFF9BC60); // Mustard/Amber accent
 }
