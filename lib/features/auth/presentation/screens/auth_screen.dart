@@ -30,6 +30,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isLoading = false;
   double? _locationLat;
   double? _locationLng;
+  bool _isAutoRequesting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Professional approach: request location at startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestLocationPermission(silent: true);
+    });
+  }
 
   @override
   void dispose() {
@@ -41,21 +51,29 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     super.dispose();
   }
 
-  Future<void> _requestLocationPermission() async {
+  Future<void> _requestLocationPermission({bool silent = false}) async {
+    if (_isAutoRequesting) return;
+    setState(() => _isAutoRequesting = true);
+    
     final locationService = ref.read(locationServiceProvider);
     final position = await locationService.getCurrentLocation();
-    if (position != null) {
-      setState(() {
-        _locationLat = position.latitude;
-        _locationLng = position.longitude;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✓ Location permission granted'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+    
+    if (mounted) {
+      setState(() => _isAutoRequesting = false);
+      if (position != null) {
+        setState(() {
+          _locationLat = position.latitude;
+          _locationLng = position.longitude;
+        });
+        if (!silent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✓ Location captured successfully'),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
     }
   }
@@ -227,7 +245,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: _requestLocationPermission,
+                          onTap: _locationLat != null || _isAutoRequesting ? null : _requestLocationPermission,
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -244,11 +262,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             ),
                             child: Row(
                               children: [
-                                Icon(
-                                  _locationLat != null ? Icons.location_on : Icons.location_searching_rounded,
-                                  color: _locationLat != null ? AppColors.success : AppColors.primary,
-                                  size: 20,
-                                ),
+                                if (_isAutoRequesting)
+                                  const SizedBox(
+                                    width: 20, 
+                                    height: 20, 
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)
+                                  )
+                                else
+                                  Icon(
+                                    _locationLat != null ? Icons.location_on : Icons.location_searching_rounded,
+                                    color: _locationLat != null ? AppColors.success : AppColors.primary,
+                                    size: 20,
+                                  ),
                                 const SizedBox(width: 12),
                                 Text(
                                   _locationLat != null ? 'Location Captured' : 'Tap to enable location',
