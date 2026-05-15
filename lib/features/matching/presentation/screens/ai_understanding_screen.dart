@@ -75,22 +75,19 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: AppLogo(size: 14),
-                  ),
-                  const Spacer(),
+                  const AppLogo(size: 14),
+                  const SizedBox(height: 64),
                   _buildAILoader(),
                   const SizedBox(height: 48),
                   _buildAnalysisText(),
-                  const Spacer(),
+                  const SizedBox(height: 64),
                   _buildConfidenceMeter(),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:serviq/core/theme/app_colors.dart';
@@ -318,6 +319,61 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     );
   }
 
+  Future<void> _cancelBooking(String bookingId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Cancel Booking?',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800),
+        ),
+        content: Text(
+          'Are you sure you want to cancel this service request?',
+          style: GoogleFonts.inter(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Keep Booking', style: GoogleFonts.inter(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Yes, Cancel', style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isUpdating = true);
+    final supabase = Supabase.instance.client;
+
+    try {
+      await supabase
+          .from('Bookings')
+          .update({'status': 'cancelled'})
+          .eq('id', bookingId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('✓ Booking cancelled successfully')),
+        );
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error cancelling: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
   Widget _buildActionButtons(String bookingId, String currentStatus) {
     final steps = ['confirmed', 'en_route', 'arrived', 'in_progress', 'completed'];
     final currentIndex = steps.indexOf(currentStatus);
@@ -344,7 +400,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
         const SizedBox(height: 12),
         if (currentIndex < 2) // Only allow cancellation before arrival
           TextButton(
-            onPressed: () {},
+            onPressed: () => _cancelBooking(bookingId),
             child: Text(
               'Cancel Booking',
               style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.w600),
