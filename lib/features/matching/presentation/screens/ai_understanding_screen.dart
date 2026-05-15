@@ -36,24 +36,27 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
   }
 
   void _startSimulation() async {
-    for (int i = 0; i < _stages.length; i++) {
+    int stageIndex = 0;
+    
+    // Smooth progress simulation (Big Tech approach: Perceived Performance)
+    while (_progress < 0.95 && !_isFinalizing) {
+      await Future.delayed(const Duration(milliseconds: 150));
       if (!mounted) return;
-      
-      setState(() {
-        _currentAgent = _stages[i]['agent']!;
-        _detailText = _stages[i]['detail']!;
-      });
 
-      // Gradually increase progress
-      double targetProgress = (i + 1) / (_stages.length + 1);
-      while (_progress < targetProgress) {
-        await Future.delayed(const Duration(milliseconds: 50));
-        if (!mounted) return;
-        setState(() {
-          _progress += 0.01;
-        });
-      }
-      await Future.delayed(const Duration(milliseconds: 800));
+      setState(() {
+        // Slow down as we get closer to 95% (Psychology: makes it look like it's working harder)
+        double increment = 0.01 * (1.0 - _progress);
+        if (increment < 0.002) increment = 0.002;
+        _progress += increment;
+        
+        // Update stages based on progress
+        int currentStage = (_progress * _stages.length).floor().clamp(0, _stages.length - 1);
+        if (currentStage > stageIndex) {
+          stageIndex = currentStage;
+          _currentAgent = _stages[stageIndex]['agent']!;
+          _detailText = _stages[stageIndex]['detail']!;
+        }
+      });
     }
   }
 
@@ -104,10 +107,11 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
     });
 
     while (_progress < 1.0) {
-      await Future.delayed(const Duration(milliseconds: 20));
+      await Future.delayed(const Duration(milliseconds: 16)); // ~60fps smooth finish
       if (!mounted) return;
       setState(() {
-        _progress += 0.05;
+        _progress += 0.04;
+        if (_progress > 1.0) _progress = 1.0;
       });
     }
 
