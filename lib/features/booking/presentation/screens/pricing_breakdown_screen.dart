@@ -198,14 +198,18 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: isTotal ? 16 : 14,
-              fontWeight: isTotal ? FontWeight.w900 : FontWeight.w500,
-              color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: isTotal ? 16 : 14,
+                fontWeight: isTotal ? FontWeight.w900 : FontWeight.w500,
+                color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 16),
           Text(
             '$currency ${amount.toInt()}',
             style: GoogleFonts.inter(

@@ -74,7 +74,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         );
         sessionNotifier.setUser(user);
         if (mounted) {
-          context.go('/input');
+          context.go('/home');
         }
       } else {
         // Request location for signup
@@ -90,7 +90,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         );
         sessionNotifier.setUser(user);
         if (mounted) {
-          context.go('/input');
+          context.go('/home');
         }
       }
     } on WeakPasswordException catch (e) {

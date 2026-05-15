@@ -28,7 +28,7 @@ class NotFoundScreen extends StatelessWidget {
                 PremiumButton(
                   text: 'Back to Safety',
                   icon: Icons.home_rounded,
-                  onPressed: () => context.go('/input'),
+                  onPressed: () => context.go('/home'),
                 ),
                 const Spacer(),
                 Text(

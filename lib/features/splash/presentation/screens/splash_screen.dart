@@ -53,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (mounted) {
-      context.go('/input');
+      context.go('/home');
     }
   }
 

@@ -36,8 +36,8 @@ class BottomNavBar extends StatelessWidget {
                 icon: Icons.home_rounded,
                 activeIcon: Icons.home_rounded,
                 label: 'Home',
-                isActive: currentRoute == '/input',
-                onTap: () => context.go('/input'),
+                isActive: currentRoute == '/home',
+                onTap: () => context.go('/home'),
               ),
               _NavItem(
                 icon: Icons.receipt_long_rounded,

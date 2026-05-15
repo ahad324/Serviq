@@ -30,7 +30,7 @@ class ProviderListScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(top: 20),
           child: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/input'),
+            onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
           ),
         ),
       ),
@@ -209,17 +209,22 @@ class ProviderListScreen extends ConsumerWidget {
           Row(
             children: [
               if (provider.mapsUrl != null && provider.mapsUrl!.isNotEmpty)
-                _buildActionChip(
-                  icon: Icons.map_outlined,
-                  label: 'View on Maps',
-                  onTap: () => _launchURL(provider.mapsUrl!),
+                Expanded(
+                  child: _buildActionChip(
+                    icon: Icons.map_outlined,
+                    label: 'View on Maps',
+                    onTap: () => _launchURL(provider.mapsUrl!),
+                  ),
                 ),
-              const SizedBox(width: 12),
+              if (provider.mapsUrl != null && provider.mapsUrl!.isNotEmpty && provider.website != null && provider.website!.isNotEmpty)
+                const SizedBox(width: 12),
               if (provider.website != null && provider.website!.isNotEmpty)
-                _buildActionChip(
-                  icon: Icons.language_rounded,
-                  label: 'Website',
-                  onTap: () => _launchURL(provider.website!),
+                Expanded(
+                  child: _buildActionChip(
+                    icon: Icons.language_rounded,
+                    label: 'Website',
+                    onTap: () => _launchURL(provider.website!),
+                  ),
                 ),
             ],
           ),
@@ -253,12 +258,16 @@ class ProviderListScreen extends ConsumerWidget {
           children: [
             Icon(icon, size: 16, color: AppColors.primary),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+            Flexible(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],

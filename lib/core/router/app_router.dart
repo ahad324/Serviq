@@ -29,7 +29,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation == '/auth';
 
       if (!isLoggedIn && !isAuthRoute && state.matchedLocation != '/') return '/auth';
-      if (isLoggedIn && isAuthRoute) return '/input';
+      if (isLoggedIn && isAuthRoute) return '/home';
       if (state.matchedLocation == '/') return null; // Let the splash screen show
       return null;
     },
@@ -54,7 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
         routes: [
-          GoRoute(path: '/input', builder: (context, state) => const InputScreen()),
+          GoRoute(path: '/home', builder: (context, state) => const InputScreen()),
           GoRoute(path: '/tracking', builder: (context, state) => const TrackingScreen()),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
           GoRoute(path: '/booking-history', builder: (context, state) => const BookingHistoryScreen()),

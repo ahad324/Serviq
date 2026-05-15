@@ -60,8 +60,8 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppLogo(size: 14),
-                      const SizedBox(height: 40),
+                      const Center(child: AppLogo(size: 20)),
+                      const SizedBox(height: 64),
                       const ScreenHeader(
                         title: 'What service do you\nneed today?',
                       ),

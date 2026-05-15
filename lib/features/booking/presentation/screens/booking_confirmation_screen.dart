@@ -21,45 +21,49 @@ class BookingConfirmationScreen extends ConsumerWidget {
             
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: AppLogo(size: 14),
-                  ),
-                  const SizedBox(height: 48),
-                  _buildSuccessIcon(),
-                  const SizedBox(height: 32),
-                  _buildConfirmationText(),
-                  const SizedBox(height: 48),
-                  _buildBookingCard(provider),
-                  const SizedBox(height: 64),
-                  PremiumButton(
-                    text: 'Track Service Status',
-                    icon: Icons.local_shipping_rounded,
-                    onPressed: () => context.go('/tracking'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/input'),
-                    child: Text(
-                      'Back to Home',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        toolbarHeight: 80,
+        automaticallyImplyLeading: false,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: AppLogo(size: 14),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildSuccessIcon(),
+                const SizedBox(height: 32),
+                _buildConfirmationText(),
+                const SizedBox(height: 48),
+                _buildBookingCard(provider),
+                const SizedBox(height: 64),
+                PremiumButton(
+                  text: 'Track Service Status',
+                  icon: Icons.local_shipping_rounded,
+                  onPressed: () => context.go('/tracking'),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => context.go('/home'),
+                  child: Text(
+                    'Back to Home',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -88,9 +92,11 @@ class BookingConfirmationScreen extends ConsumerWidget {
     final timeStr = '${confirmedTime.hour.toString().padLeft(2, '0')}:${confirmedTime.minute.toString().padLeft(2, '0')}';
     
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           'Booking Confirmed!',
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 28,
             fontWeight: FontWeight.w900,
