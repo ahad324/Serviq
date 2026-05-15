@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -57,80 +58,97 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: StreamBuilder<List<Map<String, dynamic>>>(
-          stream: supabase
-              .from('Bookings')
-              .stream(primaryKey: ['id'])
-              .eq('user_id', user?.id ?? '')
-              .order('created_at', ascending: false)
-              .limit(1),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const PremiumLoadingIndicator();
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            
-            final bookings = snapshot.data ?? [];
-            if (bookings.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.location_searching_rounded, size: 64, color: AppColors.textDisabled.withValues(alpha: 0.5)),
-                    const SizedBox(height: 20),
-                    Text(
-                      'No active bookings to track',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+        child: Stack(
+          children: [
+            StreamBuilder<List<Map<String, dynamic>>>(
+              stream: supabase
+                  .from('Bookings')
+                  .stream(primaryKey: ['id'])
+                  .eq('user_id', user?.id ?? '')
+                  .order('created_at', ascending: false)
+                  .limit(1),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const PremiumLoadingIndicator();
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                
+                final bookings = snapshot.data ?? [];
+                if (bookings.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_searching_rounded, size: 64, color: AppColors.textDisabled.withValues(alpha: 0.5)),
+                        const SizedBox(height: 20),
+                        Text(
+                          'No active bookings to track',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Book a service to see live updates',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Book a service to see live updates',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
+                  );
+                }
+
+                final booking = bookings.first;
+                final String currentStatus = booking['status'];
+                final String bookingId = booking['id'];
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 32),
+                      _buildStatusCard(currentStatus),
+                      const SizedBox(height: 32),
+                      _buildTimeline(currentStatus),
+                      const SizedBox(height: 32),
+                      _buildActionButtons(bookingId, currentStatus),
+                    ],
+                  ),
+                );
+              },
+            ),
+            if (_isUpdating)
+              Positioned.fill(
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(
+                      color: AppColors.background.withValues(alpha: 0.3),
+                      child: const Center(child: PremiumLoadingIndicator()),
                     ),
-                  ],
+                  ),
                 ),
-              );
-            }
-
-            final booking = bookings.first;
-            final String currentStatus = booking['status'];
-            final String bookingId = booking['id'];
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 24),
-                  _buildStatusCard(currentStatus),
-                  const SizedBox(height: 32),
-                  _buildTimeline(currentStatus),
-                  const SizedBox(height: 32),
-                  _buildActionButtons(bookingId, currentStatus),
-                ],
               ),
-            );
-          },
+          ],
         ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppLogo(size: 10),
-        const Spacer(),
+        const AppLogo(size: 12),
+        const SizedBox(height: 16),
         const StatusBadge(text: 'LIVE TRACKING'),
       ],
     );

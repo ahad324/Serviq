@@ -97,7 +97,7 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +134,7 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
                     ],
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(height: 64),
                 PremiumButton(
                   text: 'Confirm & Book Now',
                   icon: Icons.check_circle_rounded,

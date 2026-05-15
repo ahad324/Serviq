@@ -8,171 +8,243 @@ import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
 import 'package:serviq/features/matching/domain/models/service_response.dart';
 
-class AIUnderstandingScreen extends ConsumerWidget {
+class AIUnderstandingScreen extends ConsumerStatefulWidget {
   const AIUnderstandingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AIUnderstandingScreen> createState() => _AIUnderstandingScreenState();
+}
+
+class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
+  double _progress = 0.0;
+  String _currentAgent = 'Initializing Intent Agent...';
+  String _detailText = 'Connecting to neural processing unit...';
+  bool _isFinalizing = false;
+
+  final List<Map<String, String>> _stages = [
+    {'agent': 'Intent Agent', 'detail': 'Analyzing linguistic patterns and urgency markers...'},
+    {'agent': 'Matching Agent', 'detail': 'Scanning 50+ service professionals in your area...'},
+    {'agent': 'Decision Agent', 'detail': 'Evaluating provider performance and customer feedback...'},
+    {'agent': 'Pricing Agent', 'detail': 'Calculating fair market rates and urgency multipliers...'},
+    {'agent': 'Booking Agent', 'detail': 'Finalizing service availability and route optimization...'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _startSimulation();
+  }
+
+  void _startSimulation() async {
+    for (int i = 0; i < _stages.length; i++) {
+      if (!mounted) return;
+      
+      setState(() {
+        _currentAgent = _stages[i]['agent']!;
+        _detailText = _stages[i]['detail']!;
+      });
+
+      // Gradually increase progress
+      double targetProgress = (i + 1) / (_stages.length + 1);
+      while (_progress < targetProgress) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        if (!mounted) return;
+        setState(() {
+          _progress += 0.01;
+        });
+      }
+      await Future.delayed(const Duration(milliseconds: 800));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final bookingState = ref.watch(serviceBookingProvider);
+
+    // When data arrives, push progress to 100% and navigate
+    bookingState.whenData((booking) {
+      if (booking != null && !_isFinalizing) {
+        _isFinalizing = true;
+        _finalizeAndNavigate();
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: bookingState.when(
-          data: (booking) {
-            if (booking == null) return const SizedBox.shrink();
-            
-            // Auto-navigate to provider list after analysis
-            Future.delayed(const Duration(seconds: 3), () {
-              if (context.mounted) context.go('/providers');
-            });
-
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 20),
-                        child: AppLogo(size: 14),
-                      ),
-                      const Spacer(),
-                      _buildAILoader(),
-                      const SizedBox(height: 48),
-                      _buildAnalysisText(booking),
-                      const Spacer(),
-                      _buildConfidenceMeter(booking.intent.confidence),
-                      const SizedBox(height: 40),
-                    ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: AppLogo(size: 14),
                   ),
-                ),
+                  const Spacer(),
+                  _buildAILoader(),
+                  const SizedBox(height: 48),
+                  _buildAnalysisText(),
+                  const Spacer(),
+                  _buildConfidenceMeter(),
+                  const SizedBox(height: 40),
+                ],
               ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-          error: (e, st) => Center(child: Text('Error: $e')),
+            ),
+          ),
         ),
       ),
     );
   }
 
+  void _finalizeAndNavigate() async {
+    setState(() {
+      _currentAgent = 'Agents Synced';
+      _detailText = 'Service matching complete. Redirecting...';
+    });
+
+    while (_progress < 1.0) {
+      await Future.delayed(const Duration(milliseconds: 20));
+      if (!mounted) return;
+      setState(() {
+        _progress += 0.05;
+      });
+    }
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) {
+      context.go('/providers');
+    }
+  }
+
   Widget _buildAILoader() {
     return Container(
-      width: 140,
-      height: 140,
+      width: 160,
+      height: 160,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.05),
+        color: AppColors.primary.withValues(alpha: 0.05),
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 2),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1), width: 2),
       ),
-      child: Center(
-        child: const Icon(
-          Icons.auto_awesome_rounded,
-          size: 60,
-          color: AppColors.primary,
-        ).animate(onPlay: (controller) => controller.repeat())
-         .shimmer(duration: 2.seconds, color: Colors.white.withOpacity(0.5))
-         .scale(duration: 1.seconds, begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), curve: Curves.easeInOut)
-         .then().scale(duration: 1.seconds, begin: const Offset(1.1, 1.1), end: const Offset(0.9, 0.9), curve: Curves.easeInOut),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Rotating outer ring
+          SizedBox(
+            width: 140,
+            height: 140,
+            child: CircularProgressIndicator(
+              value: _progress,
+              strokeWidth: 4,
+              backgroundColor: Colors.transparent,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+          ),
+          const Icon(
+            Icons.auto_awesome_rounded,
+            size: 60,
+            color: AppColors.primary,
+          ).animate(onPlay: (controller) => controller.repeat())
+           .shimmer(duration: 2.seconds, color: Colors.white.withValues(alpha: 0.5))
+           .scale(duration: 1.seconds, begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), curve: Curves.easeInOut)
+           .then().scale(duration: 1.seconds, begin: const Offset(1.1, 1.1), end: const Offset(0.9, 0.9), curve: Curves.easeInOut),
+        ],
       ),
     );
   }
 
-  Widget _buildAnalysisText(dynamic booking) {
+  Widget _buildAnalysisText() {
     return Column(
       children: [
-        Text(
-          'Analyzing Intent',
-          style: GoogleFonts.inter(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          child: Text(
+            _currentAgent,
+            key: ValueKey(_currentAgent),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.5,
+            ),
           ),
-        ).animate().fadeIn().slideY(begin: 0.1),
+        ),
         const SizedBox(height: 16),
         PremiumCard(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
               Text(
-                'Detected Service',
+                'SYSTEM STATUS',
                 style: GoogleFonts.inter(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                booking.intent.service.toUpperCase(),
-                style: GoogleFonts.inter(
-                  fontSize: 20,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
+                  color: AppColors.primary,
+                  letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Matching with best available providers in Wapda Town...',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  height: 1.5,
+              const SizedBox(height: 12),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  _detailText,
+                  key: ValueKey(_detailText),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                    height: 1.6,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
           ),
-        ).animate().fadeIn(delay: 300.ms).scale(begin: const Offset(0.95, 0.95)),
+        ).animate().fadeIn(delay: 300.milliseconds).scale(begin: const Offset(0.95, 0.95)),
       ],
     );
   }
 
-  Widget _buildConfidenceMeter(double confidence) {
+  Widget _buildConfidenceMeter() {
     return Column(
       children: [
-        Text(
-          'AI CONFIDENCE: ${(confidence * 100).toInt()}%',
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-            color: AppColors.textDisabled,
-            letterSpacing: 1.5,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.bolt_rounded, size: 14, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              'PROCESSING: ${(_progress * 100).toInt()}%',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDisabled,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         Container(
-          width: 240,
-          height: 8,
+          width: 280,
+          height: 10,
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(4),
+            color: AppColors.surfaceDark.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(5),
           ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: confidence,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryLight, AppColors.primary],
-                ),
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: _progress,
+              backgroundColor: Colors.transparent,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ),
         ),
       ],
-    ).animate().fadeIn(delay: 600.ms);
+    ).animate().fadeIn(delay: 600.milliseconds);
   }
 }

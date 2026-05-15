@@ -24,19 +24,32 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _simulateLoading() async {
     final steps = [
-      {'status': 'Initializing core modules...', 'duration': 800},
-      {'status': 'Connecting to AI engine...', 'duration': 1000},
-      {'status': 'Finalizing services...', 'duration': 700},
-      {'status': 'Ready', 'duration': 300},
+      {'status': 'Initializing neural core...', 'duration': 600},
+      {'status': 'Syncing with Supabase clusters...', 'duration': 800},
+      {'status': 'Loading AI agent protocols...', 'duration': 900},
+      {'status': 'Fetching local provider database...', 'duration': 700},
+      {'status': 'Optimizing route processing...', 'duration': 500},
+      {'status': 'Systems Ready', 'duration': 300},
     ];
 
     for (var i = 0; i < steps.length; i++) {
       if (!mounted) return;
+      
       setState(() {
         _status = steps[i]['status'] as String;
-        _progress = (i + 1) / steps.length;
       });
-      await Future.delayed(Duration(milliseconds: steps[i]['duration'] as int));
+
+      // Smooth progress bar movement
+      double targetProgress = (i + 1) / steps.length;
+      double startProgress = _progress;
+      int substeps = 20;
+      for (int j = 0; j <= substeps; j++) {
+        await Future.delayed(Duration(milliseconds: (steps[i]['duration'] as int) ~/ substeps));
+        if (!mounted) return;
+        setState(() {
+          _progress = startProgress + (targetProgress - startProgress) * (j / substeps);
+        });
+      }
     }
 
     if (mounted) {

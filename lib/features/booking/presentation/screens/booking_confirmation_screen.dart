@@ -25,7 +25,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -34,13 +34,13 @@ class BookingConfirmationScreen extends ConsumerWidget {
                     padding: EdgeInsets.only(top: 20),
                     child: AppLogo(size: 14),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 48),
                   _buildSuccessIcon(),
                   const SizedBox(height: 32),
                   _buildConfirmationText(),
                   const SizedBox(height: 48),
                   _buildBookingCard(provider),
-                  const Spacer(),
+                  const SizedBox(height: 64),
                   PremiumButton(
                     text: 'Track Service Status',
                     icon: Icons.local_shipping_rounded,
