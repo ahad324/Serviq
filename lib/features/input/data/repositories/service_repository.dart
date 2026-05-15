@@ -64,6 +64,7 @@ final dioProvider = Provider((ref) => Dio(
         baseUrl: 'https://n8n-production-b9127.up.railway.app/webhook',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
       ),
     ));
 
