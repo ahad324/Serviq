@@ -148,20 +148,31 @@ class AppLogo extends StatelessWidget {
             width: size * 4,
             height: size * 4,
             decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(size),
+              borderRadius: BorderRadius.circular(size * 1.2),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: Icon(
-              Icons.bolt_rounded,
-              color: Colors.white,
-              size: size * 2.5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(size * 1.2),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppColors.primary,
+                    child: Icon(
+                      Icons.bolt_rounded,
+                      color: Colors.white,
+                      size: size * 2.5,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           if (showText) ...[
