@@ -39,12 +39,20 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
     int stageIndex = 0;
     
     // Smooth progress simulation (Big Tech approach: Perceived Performance)
+    DateTime startTime = DateTime.now();
+    
     while (_progress < 0.95 && !_isFinalizing) {
       await Future.delayed(const Duration(milliseconds: 150));
       if (!mounted) return;
 
+      // Watchdog: If more than 60 seconds passed and still no response
+      if (DateTime.now().difference(startTime).inSeconds > 60 && !_isFinalizing) {
+        _showErrorDialog('Connection timed out after 60s. Please check your internet and try again.');
+        return;
+      }
+
       setState(() {
-        // Slow down as we get closer to 95% (Psychology: makes it look like it's working harder)
+        // Slow down as we get closer to 95%
         double increment = 0.01 * (1.0 - _progress);
         if (increment < 0.002) increment = 0.002;
         _progress += increment;
@@ -64,12 +72,22 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
   Widget build(BuildContext context) {
     final bookingState = ref.watch(serviceBookingProvider);
 
-    // When data arrives, push progress to 100% and navigate
-    bookingState.whenData((booking) {
-      if (booking != null && !_isFinalizing) {
-        _isFinalizing = true;
-        _finalizeAndNavigate();
-      }
+    // Use ref.listen for robust side-effects (navigation & error handling)
+    ref.listen<AsyncValue<ServiceResponse?>>(serviceBookingProvider, (previous, next) {
+      next.when(
+        data: (booking) {
+          if (booking != null && !_isFinalizing) {
+            _isFinalizing = true;
+            _finalizeAndNavigate();
+          }
+        },
+        error: (err, stack) {
+          if (!_isFinalizing) {
+            _showErrorDialog(err.toString());
+          }
+        },
+        loading: () {},
+      );
     });
 
     return Scaffold(
@@ -119,6 +137,30 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
     if (mounted) {
       context.go('/providers');
     }
+  }
+
+  void _showErrorDialog(String error) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Processing Error',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Our AI agents are having trouble connecting. This could be due to a slow network or high server load.\n\nError: $error',
+          style: GoogleFonts.inter(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.go('/home'),
+            child: const Text('Back to Home'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildAILoader() {
