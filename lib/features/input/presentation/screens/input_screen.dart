@@ -25,20 +25,14 @@ class _InputScreenState extends ConsumerState<InputScreen> {
   }
 
   void _handleSubmit() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      try {
-        await ref.read(serviceBookingProvider.notifier).submitQuery(_queryController.text);
-        
-        // After await, we check the current state of the provider.
-        // AsyncValue.hasValue and !hasError indicates success.
-        final state = ref.read(serviceBookingProvider);
-        if (state.hasValue && !state.hasError && mounted) {
-          context.go('/ai-understanding');
-        }
-      } catch (e) {
-        // Error is already handled by the AsyncNotifier and exposed via the provider state.
-        // The UI will show the error via _buildError.
-      }
+    if (_queryController.text.trim().isEmpty) return;
+    
+    // Start the submission process
+    ref.read(serviceBookingProvider.notifier).submitQuery(_queryController.text);
+    
+    // Navigate immediately to the AI Understanding screen
+    if (mounted) {
+      context.go('/ai-understanding');
     }
   }
 
@@ -50,28 +44,35 @@ class _InputScreenState extends ConsumerState<InputScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const ScreenHeader(
-                  title: 'What service do you\nneed today?',
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ScreenHeader(
+                        title: 'What service do you\nneed today?',
+                      ),
+                      const SizedBox(height: 60),
+                      _buildInputSection(bookingState.isLoading),
+                      const SizedBox(height: 40),
+                      PremiumButton(
+                        text: 'Find Service Provider',
+                        icon: Icons.search_rounded,
+                        isLoading: bookingState.isLoading,
+                        onPressed: _handleSubmit,
+                      ),
+                      const SizedBox(height: 32),
+                      _buildMicButton(),
+                      if (bookingState.hasError) _buildError(bookingState.error.toString()),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 60),
-                _buildInputSection(bookingState.isLoading),
-                const SizedBox(height: 40),
-                PremiumButton(
-                  text: 'Find Service Provider',
-                  icon: Icons.search_rounded,
-                  isLoading: bookingState.isLoading,
-                  onPressed: _handleSubmit,
-                ),
-                const SizedBox(height: 32),
-                _buildMicButton(),
-                if (bookingState.hasError) _buildError(bookingState.error.toString()),
-              ],
+              ),
             ),
           ),
         ),

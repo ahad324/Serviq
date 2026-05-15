@@ -21,7 +21,7 @@ class TrackingScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const AppLogo(size: 14),
+        title: const AppLogo(size: 18),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
           onPressed: () => context.pop(),
@@ -39,63 +39,70 @@ class TrackingScreen extends ConsumerWidget {
               : 'TBD';
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStatusBanner(lifecycle.enRoute.message ?? 'Provider is en-route'),
-                const SizedBox(height: 40),
-                Text(
-                  'SERVICE TIMELINE',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDisabled,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildTimeline(lifecycle),
-                const SizedBox(height: 40),
-                PremiumCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                      _buildStatusBanner(lifecycle.enRoute.message ?? 'Provider is en-route'),
+                      const SizedBox(height: 40),
+                      Text(
+                        'SERVICE TIMELINE',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textDisabled,
+                          letterSpacing: 1.5,
                         ),
-                        child: const Icon(Icons.access_time_filled_rounded, color: AppColors.primary, size: 24),
                       ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Estimated Arrival',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                      const SizedBox(height: 24),
+                      _buildTimeline(lifecycle),
+                      const SizedBox(height: 40),
+                      PremiumCard(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.access_time_filled_rounded, color: AppColors.primary, size: 24),
                             ),
-                          ),
-                          Text(
-                            etaStr,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textPrimary,
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Estimated Arrival',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  etaStr,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
           );
         },

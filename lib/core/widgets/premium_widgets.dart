@@ -96,8 +96,14 @@ class PremiumButton extends StatelessWidget {
 class AppLogo extends StatelessWidget {
   final double size;
   final Color? color;
+  final bool showText;
 
-  const AppLogo({super.key, this.size = 24, this.color});
+  const AppLogo({
+    super.key, 
+    this.size = 24, 
+    this.color,
+    this.showText = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -105,23 +111,41 @@ class AppLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          width: size * 1.5,
+          height: size * 1.5,
           decoration: BoxDecoration(
-            color: color ?? AppColors.primary,
-            borderRadius: BorderRadius.circular(10),
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.primaryLight],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(size * 0.4),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 16),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          'SERVIQ',
-          style: GoogleFonts.inter(
-            fontSize: size,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2,
-            color: color ?? AppColors.textPrimary,
+          child: Icon(
+            Icons.flash_on_rounded, 
+            color: AppColors.accent, 
+            size: size * 0.9,
           ),
         ),
+        if (showText) ...[
+          const SizedBox(width: 12),
+          Text(
+            'SERVIQ',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: size,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+              color: color ?? AppColors.textPrimary,
+            ),
+          ),
+        ],
       ],
     );
   }

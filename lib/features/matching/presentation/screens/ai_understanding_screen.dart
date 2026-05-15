@@ -26,20 +26,25 @@ class AIUnderstandingScreen extends ConsumerWidget {
               if (context.mounted) context.go('/provider-list');
             });
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const AppLogo(size: 14),
-                  const Spacer(),
-                  _buildAILoader(),
-                  const SizedBox(height: 48),
-                  _buildAnalysisText(booking),
-                  const Spacer(),
-                  _buildConfidenceMeter(booking.meta.confidence),
-                  const SizedBox(height: 40),
-                ],
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const AppLogo(size: 14),
+                      const Spacer(),
+                      _buildAILoader(),
+                      const SizedBox(height: 48),
+                      _buildAnalysisText(booking),
+                      const Spacer(),
+                      _buildConfidenceMeter(booking.meta.confidence),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
               ),
             );
           },
