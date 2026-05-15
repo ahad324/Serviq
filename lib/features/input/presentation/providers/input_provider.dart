@@ -33,12 +33,17 @@ class ServiceBookingNotifier extends AsyncNotifier<ServiceResponse?> {
       final repository = ref.read(serviceRepositoryProvider);
       final locationService = ref.read(locationServiceProvider);
       
+      // Mandatory live location for precise matching
       final position = await locationService.getCurrentLocation();
+      
+      if (position == null) {
+        throw Exception('LOCATION_REQUIRED');
+      }
       
       final result = await repository.requestService(
         query,
-        lat: position?.latitude,
-        lng: position?.longitude,
+        lat: position.latitude,
+        lng: position.longitude,
       );
       state = AsyncValue.data(result);
     } catch (e, st) {

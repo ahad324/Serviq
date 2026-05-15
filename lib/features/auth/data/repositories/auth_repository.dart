@@ -148,6 +148,43 @@ class AuthRepository {
     }
   }
 
+  /// Update password for custom users table
+  Future<void> updatePassword({
+    required String userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      // 1. Get current user's hash
+      final userResponse = await _client
+          .from('users')
+          .select('password_hash')
+          .eq('id', userId)
+          .single();
+      
+      // 2. Verify current password
+      final currentHash = _hashPassword(currentPassword);
+      if (userResponse['password_hash'] != currentHash) {
+        throw AppAuthException('Current password is incorrect');
+      }
+
+      // 3. Hash new password and update
+      final newHash = _hashPassword(newPassword);
+      await _client
+          .from('users')
+          .update({
+            'password_hash': newHash,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', userId);
+
+    } on AuthException catch (e) {
+      throw AppAuthException(e.message);
+    } catch (e) {
+      throw AppAuthException('Failed to update password: ${e.toString()}');
+    }
+  }
+
   /// Sign out (just clear local state - handled in app)
   Future<void> signOut() async {
     // No server-side sign out needed for custom auth

@@ -271,7 +271,9 @@ class _InputScreenState extends ConsumerState<InputScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                error,
+                error == 'Exception: LOCATION_REQUIRED' 
+                    ? 'Please enable location to find nearby providers'
+                    : error.replaceFirst('Exception: ', ''),
                 style: const TextStyle(
                   color: AppColors.error,
                   fontSize: 12,
