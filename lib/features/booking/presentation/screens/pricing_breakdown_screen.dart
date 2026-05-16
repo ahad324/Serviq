@@ -180,9 +180,23 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  provider.serviceType.toUpperCase(),
-                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                Row(
+                  children: [
+                    Text(
+                      provider.serviceType.toUpperCase(),
+                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                    ),
+                    if (provider.distanceAway != null) ...[
+                      Text(
+                        ' • ',
+                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textDisabled),
+                      ),
+                      Text(
+                        provider.distanceAway!,
+                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),

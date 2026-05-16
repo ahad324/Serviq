@@ -37,6 +37,7 @@ class ServiceProvider {
   final String? mapsUrl;
   final String? website;
   final String? reasonForChosen;
+  final String? distanceAway;
 
   ServiceProvider({
     required this.id,
@@ -51,6 +52,7 @@ class ServiceProvider {
     this.mapsUrl,
     this.website,
     this.reasonForChosen,
+    this.distanceAway,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
@@ -76,6 +78,7 @@ class ServiceProvider {
       mapsUrl: json['maps_url'],
       website: json['website'],
       reasonForChosen: reason,
+      distanceAway: json['distance_away'],
     );
   }
 }

@@ -145,6 +145,17 @@ class ProviderListScreen extends ConsumerWidget {
                             color: AppColors.textSecondary,
                           ),
                         ),
+                        if (provider.distanceAway != null) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            '• ${provider.distanceAway} away',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
