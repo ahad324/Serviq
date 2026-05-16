@@ -3,61 +3,69 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
+import 'package:serviq/features/matching/domain/models/service_response.dart';
 
 class BookingConfirmationScreen extends ConsumerWidget {
   const BookingConfirmationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bookingState = ref.watch(serviceBookingProvider);
+    final provider = ref.watch(selectedProviderProvider);
 
+    if (provider == null) {
+      return const Scaffold(body: Center(child: Text('No booking found')));
+    }
+            
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: bookingState.when(
-          data: (booking) {
-            if (booking == null) return const SizedBox.shrink();
-            
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const AppLogo(size: 14),
-                  const Spacer(),
-                  _buildSuccessIcon(),
-                  const SizedBox(height: 32),
-                  _buildConfirmationText(booking),
-                  const SizedBox(height: 48),
-                  _buildBookingCard(booking),
-                  const Spacer(),
-                  PremiumButton(
-                    text: 'Track Service Status',
-                    icon: Icons.local_shipping_rounded,
-                    onPressed: () => context.go('/tracking'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/'),
-                    child: Text(
-                      'Back to Home',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        toolbarHeight: 80,
+        automaticallyImplyLeading: false,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: AppLogo(size: 14),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildSuccessIcon(),
+                const SizedBox(height: 32),
+                _buildConfirmationText(),
+                const SizedBox(height: 48),
+                _buildBookingCard(provider),
+                const SizedBox(height: 64),
+                PremiumButton(
+                  text: 'Track Service Status',
+                  icon: Icons.local_shipping_rounded,
+                  onPressed: () => context.go('/tracking'),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => context.go('/home'),
+                  child: Text(
+                    'Back to Home',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-          error: (e, st) => Center(child: Text('Error: $e')),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -67,36 +75,38 @@ class BookingConfirmationScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.1),
+        color: AppColors.success.withValues(alpha: 0.1),
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.success.withOpacity(0.2), width: 2),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.2), width: 2),
       ),
       child: const Icon(
         Icons.check_rounded,
         size: 80,
         color: AppColors.success,
       ),
-    ).animate().scale(duration: 800.ms, curve: Curves.elasticOut);
+    ).animate().scale(duration: 800.milliseconds, curve: Curves.elasticOut);
   }
 
-  Widget _buildConfirmationText(dynamic booking) {
-    final confirmedAt = booking.lifecycle.confirmed.at;
-    final timeStr = confirmedAt != null ? DateFormat('HH:mm').format(confirmedAt) : '--:--';
+  Widget _buildConfirmationText() {
+    final confirmedTime = DateTime.now();
+    final timeStr = '${confirmedTime.hour.toString().padLeft(2, '0')}:${confirmedTime.minute.toString().padLeft(2, '0')}';
     
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           'Booking Confirmed!',
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 28,
             fontWeight: FontWeight.w900,
             color: AppColors.textPrimary,
             letterSpacing: -0.5,
           ),
-        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+        ).animate().fadeIn(delay: 200.milliseconds).slideY(begin: 0.1),
         const SizedBox(height: 12),
         Text(
-          'Your request ${booking.id.split('-').take(2).join('-')} has been accepted\nby ${booking.provider.name} at $timeStr.',
+          'Accepted at $timeStr',
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 15,
@@ -104,12 +114,12 @@ class BookingConfirmationScreen extends ConsumerWidget {
             height: 1.5,
             fontWeight: FontWeight.w500,
           ),
-        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+        ).animate().fadeIn(delay: 400.milliseconds).slideY(begin: 0.1),
       ],
     );
   }
 
-  Widget _buildBookingCard(dynamic booking) {
+  Widget _buildBookingCard(dynamic provider) {
     return PremiumCard(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -118,7 +128,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 28),
@@ -129,7 +139,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'BOOKING ID',
+                  'SERVICE PROVIDER',
                   style: GoogleFonts.inter(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -139,7 +149,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  booking.id,
+                  provider.name,
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -151,6 +161,6 @@ class BookingConfirmationScreen extends ConsumerWidget {
           ),
         ],
       ),
-    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1);
+    ).animate().fadeIn(delay: 600.milliseconds).slideY(begin: 0.1);
   }
 }
