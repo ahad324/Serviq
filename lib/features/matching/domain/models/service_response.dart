@@ -28,10 +28,12 @@ class ServiceProvider {
   final String id;
   final String name;
   final String serviceType;
+  final List<String> factorsUsed;
   final double rating;
   final int reviews;
   final String phone;
   final String address;
+  final Pricing pricing;
   final double lat;
   final double lng;
   final String? mapsUrl;
@@ -43,10 +45,12 @@ class ServiceProvider {
     required this.id,
     required this.name,
     required this.serviceType,
+    required this.factorsUsed,
     required this.rating,
     required this.reviews,
     required this.phone,
     required this.address,
+    required this.pricing,
     required this.lat,
     required this.lng,
     this.mapsUrl,
@@ -61,24 +65,50 @@ class ServiceProvider {
       reason = json['reason_for_chosen']['text'];
     } else if (json['reason_for_chosen'] is String) {
       reason = json['reason_for_chosen'];
-    } else if (json['reason_for_choosen'] is String) { // Handle typo in previous schema
-      reason = json['reason_for_choosen'];
     }
 
     return ServiceProvider(
       id: json['id'] ?? '',
       name: json['name'] ?? 'Unknown Provider',
       serviceType: json['service_type'] ?? 'service',
+      factorsUsed: (json['factors_used'] as List?)?.map((e) => e as String).toList() ?? [],
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       reviews: json['reviews'] ?? 0,
       phone: json['phone'] ?? '',
       address: json['address'] ?? '',
+      pricing: Pricing.fromJson(json['pricing'] ?? {}),
       lat: (json['location']?['lat'] as num?)?.toDouble() ?? 0.0,
       lng: (json['location']?['lng'] as num?)?.toDouble() ?? 0.0,
       mapsUrl: json['maps_url'],
       website: json['website'],
       reasonForChosen: reason,
       distanceAway: json['distance_away'],
+    );
+  }
+}
+
+class Pricing {
+  final double basePrice;
+  final double distanceCost;
+  final double urgencyCost;
+  final double finalPrice;
+  final String explanation;
+
+  Pricing({
+    required this.basePrice,
+    required this.distanceCost,
+    required this.urgencyCost,
+    required this.finalPrice,
+    required this.explanation,
+  });
+
+  factory Pricing.fromJson(Map<String, dynamic> json) {
+    return Pricing(
+      basePrice: (json['base_price'] as num?)?.toDouble() ?? 0.0,
+      distanceCost: (json['distance_cost'] as num?)?.toDouble() ?? 0.0,
+      urgencyCost: (json['urgency'] as num?)?.toDouble() ?? 0.0,
+      finalPrice: (json['final_price'] as num?)?.toDouble() ?? 0.0,
+      explanation: json['explaination'] ?? '',
     );
   }
 }

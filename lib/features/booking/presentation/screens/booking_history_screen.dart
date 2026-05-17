@@ -92,6 +92,7 @@ class _BookingCard extends StatelessWidget {
     final date = DateTime.parse(booking['created_at'].toString());
     final providerName = booking['provider_name']?.toString() ?? 'Provider Pending';
     final totalPrice = booking['total_price']?.toString() ?? '0.00';
+    final rating = (booking['Rating'] as num?)?.toInt() ?? 0;
     
     return InkWell(
       onTap: () => context.go('/tracking', extra: booking['id']),
@@ -173,14 +174,23 @@ class _BookingCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Text(
-                  'Rs. $totalPrice',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
+                if (status == 'completed' && rating > 0)
+                  Row(
+                    children: List.generate(5, (index) => Icon(
+                      index < rating ? Icons.star_rounded : Icons.star_border_rounded,
+                      size: 16,
+                      color: AppColors.accent,
+                    )),
+                  )
+                else if (status != 'completed')
+                  Text(
+                    'Rs. $totalPrice',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
               ],
             ),
           ],

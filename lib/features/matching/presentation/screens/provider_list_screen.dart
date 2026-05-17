@@ -61,7 +61,15 @@ class ProviderListScreen extends ConsumerWidget {
                 separatorBuilder: (context, index) => const SizedBox(height: 20),
                 itemBuilder: (context, index) {
                   final provider = response.providers[index];
-                  return _buildProviderCard(context, ref, provider);
+                  // Simple logic: sort by rating, then distance, then price to find the 'best'
+                  // We can improve this server-side later.
+                  final bestProvider = response.providers.reduce((a, b) {
+                     if (a.rating != b.rating) return a.rating > b.rating ? a : b;
+                     return a.pricing.finalPrice < b.pricing.finalPrice ? a : b;
+                  });
+                  final isRecommended = provider.id == bestProvider.id;
+                  
+                  return _buildProviderCard(context, ref, provider, isRecommended);
                 },
               ),
             ),
@@ -90,7 +98,7 @@ class ProviderListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProviderCard(BuildContext context, WidgetRef ref, ServiceProvider provider) {
+  Widget _buildProviderCard(BuildContext context, WidgetRef ref, ServiceProvider provider, bool isRecommended) {
     return PremiumCard(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -112,50 +120,61 @@ class ProviderListScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      provider.name,
-                      style: GoogleFonts.inter(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            provider.name,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isRecommended)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'RECOMMENDED',
+                              style: GoogleFonts.inter(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.accent,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.star_rounded, size: 18, color: AppColors.accent),
+                        const Icon(Icons.star_rounded, size: 16, color: AppColors.accent),
                         const SizedBox(width: 4),
                         Text(
                           '${provider.rating}',
                           style: GoogleFonts.inter(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 8),
                         Text(
-                          '• ${provider.reviews} reviews',
+                          '• ${provider.distanceAway ?? 'N/A'}',
                           style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
                             color: AppColors.textSecondary,
                           ),
                         ),
-                        if (provider.distanceAway != null) ...[
-                          const SizedBox(width: 4),
-                          Text(
-                            '• ${provider.distanceAway} away',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ],
@@ -163,85 +182,42 @@ class ProviderListScreen extends ConsumerWidget {
               ),
             ],
           ),
-          if (provider.reasonForChosen != null) ...[
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
+          const SizedBox(height: 16),
+          
+          // Factors
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: provider.factorsUsed.map((factor) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+                color: AppColors.surfaceDark.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.auto_awesome, size: 18, color: AppColors.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      provider.reasonForChosen!,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
+              child: Text(
+                factor.toUpperCase(),
+                style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
               ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          
-          // Address Section
-          Text(
-            'ADDRESS',
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: AppColors.textDisabled,
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            provider.address,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-              height: 1.4,
-            ),
+            )).toList(),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           
-          // Action Buttons (Maps/Website)
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (provider.mapsUrl != null && provider.mapsUrl!.isNotEmpty)
-                Expanded(
-                  child: _buildActionChip(
-                    icon: Icons.map_outlined,
-                    label: 'View on Maps',
-                    onTap: () => _launchURL(provider.mapsUrl!),
-                  ),
-                ),
-              if (provider.mapsUrl != null && provider.mapsUrl!.isNotEmpty && provider.website != null && provider.website!.isNotEmpty)
-                const SizedBox(width: 12),
-              if (provider.website != null && provider.website!.isNotEmpty)
-                Expanded(
-                  child: _buildActionChip(
-                    icon: Icons.language_rounded,
-                    label: 'Website',
-                    onTap: () => _launchURL(provider.website!),
-                  ),
-                ),
+              Text(
+                'Est. Total',
+                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+              ),
+              Text(
+                'PKR ${provider.pricing.finalPrice.toInt()}',
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary),
+              ),
             ],
           ),
           
-          const SizedBox(height: 32),
-          
+          const SizedBox(height: 20),
           PremiumButton(
             text: 'Select Professional',
             onPressed: () {

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:serviq/features/input/data/repositories/service_repository.dart';
-import 'package:serviq/features/common/domain/models/booking_model.dart' as models;
 import 'package:serviq/features/matching/domain/models/service_response.dart';
 import 'package:serviq/core/services/location_service.dart';
 

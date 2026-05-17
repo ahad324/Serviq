@@ -132,6 +132,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                 final booking = bookings.first;
                 final String currentStatus = booking['status'];
                 final String bookingId = booking['id'];
+                final int existingRating = (booking['Rating'] as num?)?.toInt() ?? 0;
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
@@ -144,7 +145,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                       const SizedBox(height: 32),
                       _buildTimeline(currentStatus),
                       const SizedBox(height: 32),
-                      _buildActionButtons(bookingId, currentStatus),
+                      _buildActionButtons(bookingId, currentStatus, existingRating: existingRating),
                     ],
                   ),
                 );
@@ -437,6 +438,13 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
           .update({'status': 'cancelled'})
           .eq('id', bookingId);
 
+      // Add log entry for cancellation
+      await supabase.from('booking_logs').insert({
+        'booking_id': bookingId,
+        'status': 'cancelled',
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('✓ Booking cancelled successfully')),
@@ -454,7 +462,80 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     }
   }
 
-  Widget _buildActionButtons(String bookingId, String currentStatus) {
+  Future<void> _updateRating(String bookingId, int rating) async {
+    setState(() => _isUpdating = true);
+    try {
+      await Supabase.instance.client
+          .from('Bookings')
+          .update({'Rating': rating})
+          .eq('id', bookingId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('✓ Thank you for your feedback!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving rating: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  void _showRatingDialog(String bookingId) {
+    int selectedRating = 0;
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text(
+            'Rate Service',
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'How was your experience with the professional?',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) => IconButton(
+                  icon: Icon(
+                    index < selectedRating ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: AppColors.accent,
+                    size: 36,
+                  ),
+                  onPressed: () => setDialogState(() => selectedRating = index + 1),
+                )),
+              ),
+            ],
+          ),
+          actions: [
+            PremiumButton(
+              text: 'Submit Rating',
+              onPressed: () {
+                if (selectedRating > 0) {
+                  _updateRating(bookingId, selectedRating);
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(String bookingId, String currentStatus, {int existingRating = 0}) {
     if (currentStatus == 'cancelled') {
       return PremiumButton(
         text: 'Book New Service',
@@ -467,9 +548,41 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     final currentIndex = steps.indexOf(currentStatus);
     
     if (currentIndex == steps.length - 1) {
+      if (existingRating > 0) {
+        return Center(
+          child: Column(
+            children: [
+              Text(
+                'YOUR RATING',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDisabled,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) => Icon(
+                  index < existingRating ? Icons.star_rounded : Icons.star_border_rounded,
+                  color: AppColors.accent,
+                  size: 32,
+                )),
+              ),
+              const SizedBox(height: 24),
+              PremiumButton(
+                text: 'Back to Home',
+                onPressed: () => context.go('/home'),
+                icon: Icons.home_rounded,
+              ),
+            ],
+          ),
+        );
+      }
       return PremiumButton(
         text: 'Rate Service',
-        onPressed: () {},
+        onPressed: () => _showRatingDialog(bookingId),
         icon: Icons.star_rounded,
       );
     }
