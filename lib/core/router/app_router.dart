@@ -14,7 +14,7 @@ import 'package:serviq/features/auth/presentation/providers/session_provider.dar
 import 'package:serviq/features/splash/presentation/screens/splash_screen.dart';
 import 'package:serviq/core/widgets/bottom_nav_bar.dart';
 import 'package:serviq/core/widgets/not_found_screen.dart';
-
+import 'package:serviq/core/widgets/tab_shell_scaffold.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -45,25 +45,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const AuthScreen(),
       ),
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) {
-          return Scaffold(
-            body: child,
-            bottomNavigationBar: BottomNavBar(currentRoute: state.matchedLocation),
-          );
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return TabShellScaffold(navigationShell: navigationShell);
         },
-        routes: [
-          GoRoute(path: '/home', builder: (context, state) => const InputScreen()),
-          GoRoute(
-            path: '/tracking',
-            builder: (context, state) {
-              final bookingId = state.extra as String?;
-              return TrackingScreen(bookingId: bookingId);
-            },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/home', builder: (context, state) => const InputScreen()),
+            ],
           ),
-          GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
-          GoRoute(path: '/booking-history', builder: (context, state) => const BookingHistoryScreen()),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/booking-history', builder: (context, state) => const BookingHistoryScreen()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/tracking',
+                builder: (context, state) {
+                  final bookingId = state.extra as String?;
+                  return TrackingScreen(bookingId: bookingId);
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
+            ],
+          ),
         ],
       ),
       // Other routes that shouldn't have bottom nav
