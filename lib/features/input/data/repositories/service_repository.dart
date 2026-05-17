@@ -24,7 +24,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
       print('--- API REQUEST ---');
       final payload = {
         'query': query,
-        'test': false,
+        'test': true,
         'longitude': lng,
         'latitude': lat,
       };
