@@ -240,71 +240,71 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
-                      // Location Button
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _locationLat != null || _isAutoRequesting ? null : _requestLocationPermission,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                            decoration: BoxDecoration(
+                    ],
+                    const SizedBox(height: 24),
+                    // Location Button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _locationLat != null || _isAutoRequesting ? null : _requestLocationPermission,
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: _locationLat != null 
+                                ? AppColors.success.withValues(alpha: 0.1)
+                                : AppColors.primary.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
                               color: _locationLat != null 
-                                  ? AppColors.success.withValues(alpha: 0.1)
-                                  : AppColors.primary.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: _locationLat != null 
-                                    ? AppColors.success.withValues(alpha: 0.3)
-                                    : AppColors.primary.withValues(alpha: 0.1),
-                              ),
+                                  ? AppColors.success.withValues(alpha: 0.3)
+                                  : AppColors.primary.withValues(alpha: 0.1),
                             ),
-                            child: Row(
-                              children: [
-                                if (_isAutoRequesting)
-                                  const SizedBox(
-                                    width: 20, 
-                                    height: 20, 
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)
-                                  )
-                                else
-                                  Icon(
-                                    _locationLat != null ? Icons.location_on : Icons.location_searching_rounded,
-                                    color: _locationLat != null ? AppColors.success : AppColors.primary,
-                                    size: 20,
-                                  ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  _locationLat != null ? 'Location Captured' : 'Tap to enable location',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: _locationLat != null ? AppColors.success : AppColors.primary,
-                                  ),
+                          ),
+                          child: Row(
+                            children: [
+                              if (_isAutoRequesting)
+                                const SizedBox(
+                                  width: 20, 
+                                  height: 20, 
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)
+                                )
+                              else
+                                Icon(
+                                  _locationLat != null ? Icons.location_on : Icons.location_searching_rounded,
+                                  color: _locationLat != null ? AppColors.success : AppColors.primary,
+                                  size: 20,
                                 ),
-                                const Spacer(),
-                                if (_locationLat != null)
-                                  const Icon(Icons.check_circle, color: AppColors.success, size: 20),
-                              ],
-                            ),
+                              const SizedBox(width: 12),
+                              Text(
+                                _locationLat != null ? 'Location Captured' : 'Tap to enable location',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: _locationLat != null ? AppColors.success : AppColors.primary,
+                                ),
+                              ),
+                              const Spacer(),
+                              if (_locationLat != null)
+                                const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                            ],
                           ),
                         ),
                       ),
-                    ],
+                    ),
                     const SizedBox(height: 40),
                     PremiumButton(
                       text: _isLogin ? 'Sign In' : 'Create Account',
-                      onPressed: (!_isLogin && _locationLat == null) ? () {
+                      onPressed: (_locationLat == null) ? () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Please enable location to create your account'),
+                            content: Text('Please enable location to proceed'),
                             backgroundColor: AppColors.warning,
                           ),
                         );
                       } : _submit,
                       isLoading: _isLoading,
-                      color: (!_isLogin && _locationLat == null) ? AppColors.textDisabled : null,
+                      color: (_locationLat == null) ? AppColors.textDisabled : null,
                       icon: _isLogin ? Icons.login_rounded : Icons.person_add_rounded,
                     ),
                   ],

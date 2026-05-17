@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
+import 'package:serviq/features/input/data/repositories/service_repository.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
@@ -175,7 +176,7 @@ class _InputScreenState extends ConsumerState<InputScreen> {
                       const SizedBox(height: 40),
                       _buildMicButton(),
                       if (bookingState.hasError)
-                        _buildError(bookingState.error.toString()),
+                        _buildError(bookingState.error),
                     ],
                   ),
                 ),
@@ -256,31 +257,62 @@ class _InputScreenState extends ConsumerState<InputScreen> {
     ).animate().fadeIn(delay: 600.milliseconds);
   }
 
-  Widget _buildError(String error) {
+  Widget _buildError(Object? error) {
+    // When using AsyncNotifier, errors are often wrapped in AsyncError
+    final actualError = error is AsyncError ? error.error : error;
+    
+    String displayMessage = actualError.toString();
+    String? hint;
+
+    if (actualError is ServiceApiException) {
+      displayMessage = actualError.message;
+      hint = actualError.hint;
+    } else {
+      displayMessage = displayMessage.replaceFirst('Exception: ', '');
+    }
+
     return Padding(
       padding: const EdgeInsets.only(top: 24),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.error.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 16),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                error == 'Exception: LOCATION_REQUIRED' 
-                    ? 'Please enable location to find nearby providers'
-                    : error.replaceFirst('Exception: ', ''),
-                style: const TextStyle(
-                  color: AppColors.error,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+            Row(
+              children: [
+                const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    displayMessage,
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (hint != null && hint.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.only(left: 28),
+                child: Text(
+                  hint,
+                  style: const TextStyle(
+                    color: AppColors.error,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ),
-            ),
+            ]
           ],
         ),
       ),

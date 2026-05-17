@@ -3,70 +3,138 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:serviq/features/matching/domain/models/service_response.dart';
 
 abstract class ServiceRepository {
-  Future<ServiceResponse> requestService(String query, {double? lat, double? lng});
+  Future<ServiceResponse> requestService(
+    String query, {
+    double? lat,
+    double? lng,
+  });
+}
+
+class ServiceApiException implements Exception {
+  final Map<String, dynamic> data;
+
+  ServiceApiException(this.data);
+
+  String get message =>
+      data['message']?.toString() ?? 'Something went wrong';
+
+  String get hint =>
+      data['hint']?.toString() ?? 'Please try again';
+
+  String get error =>
+      data['error']?.toString() ?? 'UNKNOWN_ERROR';
+
+  @override
+  String toString() => message;
 }
 
 class ServiceRepositoryImpl implements ServiceRepository {
   final Dio _dio;
   final bool _useMock;
 
-  ServiceRepositoryImpl(this._dio, {bool useMock = true}) : _useMock = useMock;
+  ServiceRepositoryImpl(
+    this._dio, {
+    bool useMock = false,
+  }) : _useMock = useMock;
 
   @override
-  Future<ServiceResponse> requestService(String query, {double? lat, double? lng}) async {
+  Future<ServiceResponse> requestService(
+    String query, {
+    double? lat,
+    double? lng,
+  }) async {
     if (_useMock) {
-      await Future.delayed(const Duration(seconds: 2));
-      // In a real app, you'd map mock data to ServiceResponse
-      throw UnimplementedError('Mock for ServiceResponse not implemented');
+      throw ServiceApiException({
+        'message': 'Mock mode enabled',
+        'hint': 'Disable mock mode',
+      });
     }
 
     try {
-      print('--- API REQUEST ---');
-      final payload = {
-        'query': query,
-        'test': true,
-        'longitude': lng,
-        'latitude': lat,
-      };
-      print('Payload: $payload');
-
       final response = await _dio.post(
         '/webhook/service-request',
-        data: payload,
+        data: {
+          'query': query,
+          'test': false,
+          'longitude': lng,
+          'latitude': lat,
+        },
       );
-      
-      print('--- API RESPONSE ---');
-      print('Status: ${response.statusCode}');
-      print('Data: ${response.data}');
 
-      // n8n webhooks often return an array [ { ... } ]
-      final dynamic rawData = response.data;
-      if (rawData is List && rawData.isNotEmpty) {
-        return ServiceResponse.fromJson(rawData.first as Map<String, dynamic>);
-      } else if (rawData is Map<String, dynamic>) {
-        return ServiceResponse.fromJson(rawData);
-      } else {
-        throw Exception('Unexpected response format: $rawData');
+      print("STATUS: ${response.statusCode}");
+      print("DATA: ${response.data}");
+
+      final Map<String, dynamic> data =
+          _extractData(response.data);
+
+      // IMPORTANT FIX
+      if (data['success'] == false) {
+        throw ServiceApiException(data);
       }
-    } catch (e) {
-      print('--- API ERROR ---');
-      print('Error: $e');
+
+      return ServiceResponse.fromJson(data);
+    } on ServiceApiException {
       rethrow;
+    } on DioException catch (e) {
+      print("DIO ERROR: ${e.response?.data}");
+
+      final Map<String, dynamic> data =
+          _extractData(e.response?.data);
+
+      throw ServiceApiException(data);
+    } catch (e) {
+      print("UNKNOWN ERROR: $e");
+
+      throw ServiceApiException({
+        'message': 'Something went wrong',
+        'hint': 'Please try again',
+      });
     }
+  }
+
+  Map<String, dynamic> _extractData(dynamic raw) {
+    if (raw == null) return {};
+
+    if (raw is Map<String, dynamic>) {
+      return raw;
+    }
+
+    if (raw is List && raw.isNotEmpty) {
+      final first = raw.first;
+
+      if (first is Map<String, dynamic>) {
+        return first;
+      }
+    }
+
+    return {
+      'message': raw.toString(),
+      'hint': 'Please try again',
+    };
   }
 }
 
-final dioProvider = Provider((ref) => Dio(
-      BaseOptions(
-        baseUrl: 'https://n8n-production-b9127.up.railway.app',
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
-      ),
-    ));
+final dioProvider = Provider(
+  (ref) => Dio(
+    BaseOptions(
+      baseUrl: 'https://n8n-production-b9127.up.railway.app',
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  ),
+);
 
-final serviceRepositoryProvider = Provider<ServiceRepository>((ref) {
+final serviceRepositoryProvider =
+    Provider<ServiceRepository>((ref) {
   final dio = ref.watch(dioProvider);
-  // Set useMock to false for real API integration
-  return ServiceRepositoryImpl(dio, useMock: false);
+
+  return ServiceRepositoryImpl(
+    dio,
+    useMock: false,
+  );
 });
