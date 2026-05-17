@@ -1,9 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:serviq/features/common/domain/models/booking_model.dart' as models;
 import 'package:serviq/features/matching/domain/models/service_response.dart';
-import 'package:serviq/features/common/data/mock_data.dart';
-import 'package:serviq/core/services/location_service.dart';
 
 abstract class ServiceRepository {
   Future<ServiceResponse> requestService(String query, {double? lat, double? lng});
@@ -34,7 +31,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
       print('Payload: $payload');
 
       final response = await _dio.post(
-        '/service-request',
+        '/webhook/service-request',
         data: payload,
       );
       
@@ -61,7 +58,7 @@ class ServiceRepositoryImpl implements ServiceRepository {
 
 final dioProvider = Provider((ref) => Dio(
       BaseOptions(
-        baseUrl: 'https://n8n-production-b9127.up.railway.app/webhook',
+        baseUrl: 'https://n8n-production-b9127.up.railway.app',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 30),

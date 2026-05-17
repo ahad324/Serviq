@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -47,7 +48,7 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
 
       // Watchdog: If more than 60 seconds passed and still no response
       if (DateTime.now().difference(startTime).inSeconds > 60 && !_isFinalizing) {
-        _showErrorDialog('Connection timed out after 60s. Please check your internet and try again.');
+        _showErrorDialog('{"message": "Connection timed out", "hint": "Check your internet and try again."}');
         return;
       }
 
@@ -70,8 +71,6 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bookingState = ref.watch(serviceBookingProvider);
-
     // Use ref.listen for robust side-effects (navigation & error handling)
     ref.listen<AsyncValue<ServiceResponse?>>(serviceBookingProvider, (previous, next) {
       next.when(
@@ -141,24 +140,86 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
 
   void _showErrorDialog(String error) {
     if (!mounted) return;
+    
+    String message = 'An unexpected error occurred.';
+    String hint = 'Please try again later.';
+    
+    try {
+      final jsonStart = error.indexOf('{');
+      if (jsonStart != -1) {
+        final jsonStr = error.substring(jsonStart);
+        final data = jsonDecode(jsonStr);
+        message = data['message'] ?? message;
+        hint = data['hint'] ?? hint;
+      } else {
+        message = error.replaceAll('Exception: ', '');
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    int countdown = 5;
+    
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Processing Error',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'Our AI agents are having trouble connecting. This could be due to a slow network or high server load.\n\nError: $error',
-          style: GoogleFonts.inter(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.go('/home'),
-            child: const Text('Back to Home'),
-          ),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          Future.delayed(const Duration(seconds: 1), () {
+            if (countdown > 1) {
+              if (mounted) setState(() => countdown--);
+            } else {
+              if (mounted) {
+                ref.invalidate(serviceBookingProvider);
+                context.go('/home');
+              }
+            }
+          });
+
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  'Processing Issue',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: GoogleFonts.inter(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Hint: $hint',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Center(
+                  child: Text(
+                    'Redirecting to Home in $countdown seconds...',
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textDisabled),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       ),
     );
   }
@@ -175,7 +236,6 @@ class _AIUnderstandingScreenState extends ConsumerState<AIUnderstandingScreen> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Rotating outer ring
           SizedBox(
             width: 140,
             height: 140,

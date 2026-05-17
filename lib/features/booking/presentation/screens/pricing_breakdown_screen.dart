@@ -26,11 +26,8 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
       final user = ref.read(sessionNotifierProvider);
       final supabase = Supabase.instance.client;
       
-      // Calculate final price
-      final basePrice = 1500.0;
-      final urgencyFee = basePrice * (response.intent.urgencyMultiplier - 1.0);
-      final serviceFee = 250.0;
-      final grandTotal = basePrice + urgencyFee + serviceFee;
+      // Use the accurate total from the provider's pricing schema, cast to int
+      final grandTotal = provider.pricing.finalPrice.toInt();
 
       // Insert into Supabase so TrackingScreen works
       await supabase.from('Bookings').insert({
@@ -69,11 +66,7 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
       );
     }
 
-    final basePrice = 1500.0;
-    final urgencyFee = basePrice * (response.intent.urgencyMultiplier - 1.0);
-    final serviceFee = 250.0;
-    final grandTotal = basePrice + urgencyFee + serviceFee;
-    final platformFeePercent = ((serviceFee / basePrice) * 100).toInt();
+    final pricing = provider.pricing;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -118,18 +111,23 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      _buildPriceRow('Base Service Fee', basePrice, 'PKR'),
-                      if (urgencyFee > 0)
-                        _buildPriceRow('${response.intent.urgency.toUpperCase()} Urgency Fee', urgencyFee, 'PKR'),
-                      _buildPriceRow('Platform Service Fee ($platformFeePercent%)', serviceFee, 'PKR'),
+                      _buildPriceRow('Base Service Fee', pricing.basePrice, 'PKR'),
+                      if (pricing.urgencyCost > 0)
+                        _buildPriceRow('${response.intent.urgency.toUpperCase()} Urgency Fee', pricing.urgencyCost, 'PKR'),
+                      _buildPriceRow('Distance Travel Fee', pricing.distanceCost, 'PKR'),
                       const SizedBox(height: 16),
                       const Divider(color: AppColors.surfaceDark),
                       const SizedBox(height: 16),
                       _buildPriceRow(
                         'Grand Total',
-                        grandTotal,
+                        pricing.finalPrice,
                         'PKR',
                         isTotal: true,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        pricing.explanation,
+                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
                       ),
                     ],
                   ),
