@@ -146,7 +146,7 @@ When the Multi-Agent pipeline experiences query exceptions or low confidence map
 ```
 
 ### 2. No Providers Found (HTTP 200 OK with empty provider pool)
-* **Trigger**: Query resolved successfully, but no local experts match in Google Sheets within 30km.
+* **Trigger**: Query resolved successfully, but no local experts match in Supabase within 30km.
 ```json
 {
   "success": true,
