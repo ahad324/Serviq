@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:talker_flutter/talker_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/premium_widgets.dart';
 import '../../../../core/services/location_service.dart';
@@ -11,7 +9,6 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/providers/session_provider.dart';
 import '../../../auth/data/models/auth_exception.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../core/logging/app_logger.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/user_model.dart';
-import '../../../../core/logging/app_logger.dart';
 
 class SessionNotifier extends Notifier<UserModel?> {
   late SharedPreferences _prefs;
@@ -52,8 +51,8 @@ class SessionNotifier extends Notifier<UserModel?> {
       try {
         final user = UserModel.fromJson(jsonDecode(savedUserJson));
         state = user;
-      } catch (e, stack) {
-        appLogger.handle(e, stack, 'Failed to restore session from storage');
+      } catch (_) {
+        // Fail silently
       }
     }
   }
@@ -74,16 +73,16 @@ class SessionNotifier extends Notifier<UserModel?> {
     try {
       final userJson = jsonEncode(user.toJson());
       await _prefs.setString(_sessionKey, userJson);
-    } catch (e, stack) {
-      appLogger.handle(e, stack, 'Failed to save session');
+    } catch (_) {
+      // Fail silently
     }
   }
 
   Future<void> _clearSession() async {
     try {
       await _prefs.remove(_sessionKey);
-    } catch (e, stack) {
-      appLogger.handle(e, stack, 'Failed to clear session');
+    } catch (_) {
+      // Fail silently
     }
   }
 

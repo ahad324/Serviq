@@ -29,7 +29,7 @@ class MobileSpeechHelper implements AppSpeechHelper {
       _isAvailable = await _speech.initialize(
         onError: (val) {
           _isListening = false;
-          _onErrorCallback?.call(val.errorString);
+          _onErrorCallback?.call(val.errorMsg);
         },
         onStatus: (val) {
           if (val == 'listening') {
