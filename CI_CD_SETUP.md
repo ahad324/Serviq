@@ -1,204 +1,109 @@
-# 🚀 CI/CD Setup Guide for Serviq
+# 🚀 CI/CD Pipeline Setup Guide for Serviq
 
-**Updated with Latest GitHub Actions (May 2026)**
-
-## ✅ What's Been Set Up
-
-A GitHub Actions workflow that automatically:
-1. **Builds Android APK** on every push to `main` branch (with optimized compression)
-2. **Builds Web version** on every push to `main` branch (balanced compression)
-3. **Deploys Web to GitHub Pages** automatically (live at `https://ahad324.github.io/serviq`)
-4. **Creates GitHub Releases** with the APK download
-5. **Stores artifacts** for 30 days in workflow runs
+## 📌 Document Metadata
+* **Document Version**: 1.1.0
+* **Date**: May 2026
+* **Status**: Complete / Production-Ready
+* **Automation Workflow**: [build-and-release.yml](./.github/workflows/build-and-release.yml)
 
 ---
 
-## 🔄 How It Works
+## 🛠️ Automated CI/CD Actions Summary
 
-### When You Push to Main:
-```bash
-git add .
-git commit -m "your changes"
-git push origin main
-```
+Serviq integrates a highly optimized, modern GitHub Actions pipeline. On every code push to the `main` branch, the workflow runner automatically executes the following sequences:
 
-**The CI/CD pipeline will automatically:**
-1. ✅ Check out your code
-2. ✅ Setup Java 17 for Android build
-3. ✅ Install Flutter & dependencies
-4. ✅ Build Android APK (release, optimized)
-5. ✅ Build Web (release, with compression)
-6. ✅ Deploy Web to **GitHub Pages** (live & accessible instantly)
-7. ✅ Create a GitHub Release with:
-   - Download link for APK
-   - Build date, version, commit info
+1. **Strict Static Analysis**: Runs Dart static checkers and linter suites to ensure compliance with the repository's strict analysis options.
+2. **Android Release Compilation**: Compiles the release-ready **Android APK** with optimized compression, bypassing overhead configurations.
+3. **Web Release Compilation**: Builds the web package, injecting the correct case-sensitive base-href `/Serviq/`.
+4. **Immediate Web Deployment (GitHub Pages)**: Deploys the built web artifacts directly to GitHub Pages, instantly updating live production code.
+5. **Automatic GitHub Releases**: Packages and publishes the compiled Android APK inside a fresh GitHub Release tagged automatically with the `pubspec.yaml` version and commit SHA.
+6. **Artifact Storage**: Caches and retains APK and web builds within the GitHub runner artifacts section for 30 days.
 
 ---
 
-## 📦 Latest Actions Used (May 2026)
+## 📦 Pipeline Actions & Node.js 24 Environment
 
-| Action | Version | Purpose | Node.js Support |
-|--------|---------|---------|-----------------|
-| `actions/checkout` | **v6** ✨ | Check out your code | ✅ Node.js 24 |
-| `actions/setup-java` | **v5** ✨ | Setup Java for Android build | ✅ Node.js 24 |
-| `android-actions/setup-android` | v3 | Setup Android SDK and NDK | ✅ Node.js 24 || `peaceiris/actions-gh-pages` | v4 | Deploy web to GitHub Pages | ✅ Node.js 24 || `softprops/action-gh-release` | v3 | Create GitHub releases | ✅ Node.js 24 |
-| `actions/upload-artifact` | v7 | Upload build artifacts | ✅ Node.js 24 |
+To future-proof deployment pipelines against Node.js deprecations, the workflow centrally forces the use of **Node.js 24**:
 
-**✨ = Updated to latest Node.js 24 compatible versions**
-
----
-
-## 🔧 Node.js 24 Configuration
-
-Your workflow includes:
 ```yaml
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 ```
 
-This forces all JavaScript actions to run on Node.js 24, preventing deprecation warnings.
+The pipeline executes using the absolute latest, highly efficient GitHub Marketplace Actions:
+
+| Action | Version | Primary Purpose | Node.js Support |
+| :--- | :--- | :--- | :--- |
+| `actions/checkout` | **v6** | Checks out repository code into the runner workspace. | ✅ Node.js 24 |
+| `actions/setup-java` | **v5** | Sets up the Temurin Java 17 environment for Android Gradle builds. | ✅ Node.js 24 |
+| `android-actions/setup-android` | **v3** | Installs and configures Android SDK and platform utilities. | ✅ Node.js 24 |
+| `subosito/flutter-action` | **v2** | Downloads and caches the required Flutter environment. | ✅ Node.js 24 |
+| `actions/configure-pages` | **v5** | Configures static asset structures for GitHub Pages. | ✅ Node.js 24 |
+| `actions/upload-pages-artifact` | **v3** | Packages and uploads the web asset folder. | ✅ Node.js 24 |
+| `actions/deploy-pages` | **v4** | Publishes the web package to the live GitHub Pages site. | ✅ Node.js 24 |
+| `softprops/action-gh-release` | **v3** | Generates the release post and publishes the APK download. | ✅ Node.js 24 |
+| `actions/upload-artifact` | **v7** | Backs up builds inside the actions workflow run directory. | ✅ Node.js 24 |
 
 ---
 
-## 📅 Timeline
+## 🎯 Compression & Performance Optimizations
 
-- **Current Date**: May 14, 2026
-- **Node.js 20 Deprecation**: June 2nd, 2026
-- **Node.js 20 Removal**: September 16th, 2026
+The pipeline is optimized to reduce compile times and asset sizes:
 
-Your setup is **future-proof** and ready for the Node.js 24 transition!
-
----
-
-## 🎯 Compression Optimization
-
-Your workflow uses smart compression settings:
-
-- **APK**: `compression-level: 0` → No compression (APK is already compressed, saves upload time)
-- **Web**: `compression-level: 6` → Balanced compression (reduces file size for web assets)
-
-This ensures **faster upload times** while maintaining good file sizes.
+* **Android APK**: Utilizes `compression-level: 0` (No compression). Since release APKs are already compiled and compressed via Gradle, this saves significant runner processor overhead during upload.
+* **Web Build**: Utilizes `compression-level: 6` (Balanced compression). Compresses individual HTML, JS, CSS, and asset files to minimize loading times for web clients.
 
 ---
 
-## 📥 Where to Find Your Built App
+## 📥 Where to Download and Preview Your App
 
-### Option 1: Web App (GitHub Pages) - Live & Instant
-- Your web build is **automatically deployed** and live at:
-- `https://ahad324.github.io/serviq`
-- No download needed—users access it directly in the browser ✅
+### 1. Instant Web App (GitHub Pages)
+The web build is compiled and published automatically. Because GitHub Pages is case-sensitive, ensure the capitalization of the repo name `/Serviq/` matches exactly:  
+👉 **[https://ahad324.github.io/Serviq/](https://ahad324.github.io/Serviq/)**
 
-### Option 2: Android APK (GitHub Releases)
-- Navigate to: `https://github.com/YOUR_USERNAME/serviq/releases`
-- Your APK will be there with each build
-- Users can download directly ⬇️
+### 2. Android APK (GitHub Releases)
+Every single push creates a new tag and release entry with the compiled `serviq.apk` attached directly in the Assets section:  
+👉 **[https://github.com/ahad324/Serviq/releases](https://github.com/ahad324/Serviq/releases)**
 
-### Option 3: Workflow Artifacts
-- Go to **Actions** tab in GitHub
-- Click the latest workflow run
-- Scroll to bottom → **Artifacts**
-- Download `android-apk` (available for 30 days)
+### 3. Workflow Artifacts
+During active runs, compiled files are cached under the Actions tab. Select the specific workflow run and scroll to the bottom to locate **android-apk** and **web-build** download options (valid for 30 days).
 
 ---
 
-## 🔐 Optional: Android Signing (For Google Play)
+## 🔐 Production Android Keystore Signing Setup
 
-Currently, the APK is unsigned. For **signed APKs** on Google Play:
+Currently, the pipeline generates an unsigned debug/release APK. To compile a signed release APK suitable for publishing to the Google Play Console:
 
-### Step 1: Create a keystore locally
+### Step 1: Generate Private Key Locally
 ```bash
 keytool -genkey -v -keystore ~/key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
 ```
 
-### Step 2: Encode to base64
+### Step 2: Encode to Base64 String
 ```bash
-base64 -w 0 ~/key.jks > key.txt
+# Windows (PowerShell)
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("~/key.jks")) > key_base64.txt
+
+# macOS / Linux (Terminal)
+base64 -w 0 ~/key.jks > key_base64.txt
 ```
 
-### Step 3: Add to GitHub Secrets
-1. Go to repo **Settings** → **Secrets and variables** → **Actions**
-2. Add secret `ANDROID_KEYSTORE` with base64 content
-3. Add secret `ANDROID_KEYSTORE_PASSWORD` with your password
-
-### Step 4: Update workflow (when ready)
-Add signing configuration to the APK build step
-
----
-
-## ✅ Pre-Flight Checklist
-
-- [ ] Code pushed to GitHub
-- [ ] GitHub Actions enabled in Settings
-- [ ] `main` branch exists and is default
-- [ ] `pubspec.yaml` has version number
-- [ ] Workflow file exists at `.github/workflows/build-and-release.yml`
-- [ ] **GitHub Pages enabled**: Settings → Pages → Source set to **GitHub Actions**
-- [ ] Ready to test the CI/CD pipeline
+### Step 3: Configure GitHub Secrets
+Navigate to **Settings** ➔ **Secrets and variables** ➔ **Actions** in your GitHub repository and add:
+1. `ANDROID_KEYSTORE`: Paste the encoded base64 string from `key_base64.txt`.
+2. `ANDROID_KEYSTORE_PASSWORD`: Keystore passkey.
+3. `ANDROID_KEY_ALIAS`: Alias name (e.g. `upload`).
+4. `ANDROID_KEY_PASSWORD`: Key passkey.
 
 ---
 
-## 🚀 First Build
+## 🆘 Troubleshooting and Resolutions
 
-1. Make a small change to your code
-2. Commit and push to main:
-   ```bash
-   git add .
-   git commit -m "feat: test CI/CD pipeline"
-   git push origin main
-   ```
-3. Go to **Actions** tab in GitHub
-4. Watch the build in real-time (~5-10 minutes)
-5. After build completes:
-   - ✅ **Web app** is live at GitHub Pages (within 1-2 minutes)
-   - ✅ **APK release** created in Releases tab
-   - ✅ Check the **gh-pages branch** for deployed web files
-
----
-
-## 🆘 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| "Node.js 20 actions are deprecated" | ✅ **Fixed** - Updated to v6/v5 actions + FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true |
-| "Unable to determine Flutter version" | ✅ **Fixed** - Removed invalid `flutter-version: "latest"` parameter |
-| NDK source.properties missing | ✅ **Fixed** - Added Android SDK setup with automatic NDK handling |
-| Actions don't run | Enable Actions in Settings → Actions → General |
-| "Invalid action input" | Update action versions to latest (already done) |
-| Build fails | Check Actions tab for detailed error logs |
-| Release not created | Verify `main` branch, check permissions |
-| APK too large | Add obfuscation: `--obfuscate --split-debug-info` |
-| Slow uploads | Reduce `compression-level` on web artifacts |
-| GitHub Pages not live | Verify Settings → Pages → Source is set to **GitHub Actions** |
-| Web site shows 404 | Wait 2-3 minutes after build completes, then refresh browser |
-| Web site is blank | Check the build logs—ensure `flutter build web --release` succeeded |
-
----
-
-## 📚 Resources
-
-- [Flutter Build Docs](https://docs.flutter.dev/deployment)
-- [GitHub Actions for Flutter](https://github.com/marketplace/actions/flutter-action)
-- [GitHub Pages Deployment](https://github.com/peaceiris/actions-gh-pages)
-- [Latest upload-artifact@v7](https://github.com/actions/upload-artifact)
-- [Latest action-gh-release@v3](https://github.com/softprops/action-gh-release)
-- [GitHub Releases Docs](https://docs.github.com/en/repositories/releasing-projects-on-github/)
-
----
-
-## 📊 Monitor Your Builds
-
-- **Real-time logs**: GitHub Actions tab
-- **Build status**: Green checkmark = success ✅
-- **Failed builds**: Red X with error details ❌
-- **Release status**: Check Releases tab
-
----
-
-## 🎯 Next Steps
-
-1. ✅ Commit and push the workflow updates
-2. ✅ Make a test commit to `main`
-3. ✅ Watch the build in Actions tab
-4. ✅ Download the APK from Releases
-5. ✅ Share with users for testing
-
+| Issue | Technical Root Cause | Resolution Method |
+| :--- | :--- | :--- |
+| **Pages site displays 404** | Case sensitivity in repository naming paths. | Ensure URL uses `/Serviq/` with a capital **S** rather than `/serviq/`. |
+| **Web App is blank on load** | Incorrect Base Href mapping. | Base Href in `flutter build web` must match the repository name exactly: `--base-href "/Serviq/"`. |
+| **"Permission Denied" in Release** | GitHub token lacks repository write permissions. | Inside repo **Settings** ➔ **Actions** ➔ **General**, change Workflow Permissions to **Read and write permissions**. |
+| **"Node.js 20 Deprecated"** | Outdated GitHub Marketplace Actions. | Already solved in Serviq pipeline. Uses `softprops/action-gh-release@v3` and `actions/checkout@v6`. |
+| **Gradle compilation fails** | Java version mismatch. | Ensure `actions/setup-java` sets the Temurin distribution to Java version `17`. |
+| **APK upload takes too long** | High runner compression overhead. | Set `compression-level: 0` for compiled APK uploads inside `upload-artifact` steps. |
