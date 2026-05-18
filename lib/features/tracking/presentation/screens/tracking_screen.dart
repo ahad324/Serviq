@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
+import 'package:serviq/features/tracking/presentation/providers/tracking_provider.dart';
 
 class TrackingScreen extends ConsumerStatefulWidget {
   final String? bookingId;
@@ -56,12 +57,15 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(sessionNotifierProvider);
     final supabase = Supabase.instance.client;
+    final selectedBookingId = ref.watch(selectedBookingIdProvider);
+    
+    final bookingIdToTrack = widget.bookingId ?? selectedBookingId;
 
-    final stream = widget.bookingId != null
+    final stream = bookingIdToTrack != null
         ? supabase
             .from('Bookings')
             .stream(primaryKey: ['id'])
-            .eq('id', widget.bookingId!)
+            .eq('id', bookingIdToTrack)
         : supabase
             .from('Bookings')
             .stream(primaryKey: ['id'])
@@ -87,8 +91,8 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                 final allBookings = snapshot.data ?? [];
                 final List<Map<String, dynamic>> bookings;
                 
-                if (widget.bookingId != null) {
-                  bookings = allBookings.where((b) => b['id'] == widget.bookingId).toList();
+                if (bookingIdToTrack != null) {
+                  bookings = allBookings.where((b) => b['id'] == bookingIdToTrack).toList();
                 } else {
                   // DEFAULT VIEW: Only show truly active bookings
                   // Filter out BOTH cancelled and completed when looking for the "Live" booking

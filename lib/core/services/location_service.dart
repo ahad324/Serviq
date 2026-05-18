@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import '../logging/app_logger.dart';
 
 class LocationService {
   Future<Position?> getCurrentLocation() async {
@@ -18,8 +19,8 @@ class LocationService {
         desiredAccuracy: LocationAccuracy.best,
       );
       return position;
-    } catch (e) {
-      print('Error getting location: $e');
+    } catch (e, stack) {
+      appLogger.handle(e, stack, 'Error getting location');
       return null;
     }
   }

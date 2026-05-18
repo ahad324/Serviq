@@ -1,24 +1,55 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'core/logging/app_logger.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    
+    // Initialize Logger first
+    initLogger();
 
-  // Initialize Supabase (for database access, not auth)
-  await Supabase.initialize(
-    url: 'https://fjibhcymrgbsiaidyycd.supabase.co',
-    anonKey: 'sb_publishable_VuwoOQieswMnWhZ6fRjdHw_VLi0YZZb',
-  );
+    // Initialize Supabase (for database access, not auth)
+    await Supabase.initialize(
+      url: 'https://fjibhcymrgbsiaidyycd.supabase.co',
+      anonKey: 'sb_publishable_VuwoOQieswMnWhZ6fRjdHw_VLi0YZZb',
+    );
 
-  // Use PathUrlStrategy to remove the '#' from the URL in web
-  usePathUrlStrategy();
+    // Use PathUrlStrategy to remove the '#' from the URL in web
+    usePathUrlStrategy();
 
-  runApp(const ProviderScope(child: ServiqApp()));
+    // Handle Flutter errors
+    FlutterError.onError = (details) {
+      appLogger.handle(details.exception, details.stack);
+    };
+
+    runApp(
+      ProviderScope(
+        observers: [
+          TalkerRiverpodObserver(
+            talker: appLogger,
+            settings: const TalkerRiverpodLoggerSettings(
+              printStateFullData: false,
+              printProviderAdded: true,
+              printProviderUpdated: true,
+              printProviderFailed: true,
+            ),
+          ),
+        ],
+        child: const ServiqApp(),
+      ),
+    );
+  }, (error, stack) {
+    appLogger.handle(error, stack);
+  });
 }
 
 class ServiqApp extends ConsumerWidget {

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
+import '../../../../core/logging/app_logger.dart';
 import 'package:serviq/features/matching/domain/models/service_response.dart';
 
 abstract class ServiceRepository {
@@ -61,8 +63,8 @@ class ServiceRepositoryImpl implements ServiceRepository {
         },
       );
 
-      print("STATUS: ${response.statusCode}");
-      print("DATA: ${response.data}");
+      appLogger.debug("STATUS: ${response.statusCode}");
+      appLogger.debug("DATA: ${response.data}");
 
       final Map<String, dynamic> data =
           _extractData(response.data);
@@ -76,14 +78,14 @@ class ServiceRepositoryImpl implements ServiceRepository {
     } on ServiceApiException {
       rethrow;
     } on DioException catch (e) {
-      print("DIO ERROR: ${e.response?.data}");
+      appLogger.handle(e, e.stackTrace, "DIO ERROR: ${e.response?.data}");
 
       final Map<String, dynamic> data =
           _extractData(e.response?.data);
 
       throw ServiceApiException(data);
-    } catch (e) {
-      print("UNKNOWN ERROR: $e");
+    } catch (e, stack) {
+      appLogger.handle(e, stack, "UNKNOWN ERROR: $e");
 
       throw ServiceApiException({
         'message': 'Something went wrong',
@@ -126,7 +128,16 @@ final dioProvider = Provider(
         'Accept': 'application/json',
       },
     ),
-  ),
+  )..interceptors.add(
+      TalkerDioLogger(
+        talker: appLogger,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: false,
+          printResponseMessage: true,
+        ),
+      ),
+    ),
 );
 
 final serviceRepositoryProvider =

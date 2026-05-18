@@ -4,6 +4,15 @@ import 'tracking_state.dart';
 
 final trackingProvider = NotifierProvider<TrackingNotifier, TrackingState>(TrackingNotifier.new);
 
+class SelectedBookingIdNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? value) => state = value;
+}
+
+final selectedBookingIdProvider = NotifierProvider<SelectedBookingIdNotifier, String?>(SelectedBookingIdNotifier.new);
+
 class TrackingNotifier extends Notifier<TrackingState> {
   @override
   TrackingState build() {
