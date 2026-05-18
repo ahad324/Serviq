@@ -145,7 +145,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           title: Text('Change Password',
               style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
           content: Container(
-            width: MediaQuery.of(context).size.width * 0.9,
+            width: MediaQuery.of(context).size.width * 0.8,
             constraints: const BoxConstraints(maxWidth: 520),
             child: Form(
               key: dialogFormKey,
@@ -384,16 +384,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: Icons.lock_reset_rounded,
                       title: 'Change Password',
                       onTap: _showChangePasswordDialog,
-                    ),
-                    _buildSettingsTile(
-                      icon: Icons.notifications_none_rounded,
-                      title: 'Notifications',
-                      onTap: () {},
-                    ),
-                    _buildSettingsTile(
-                      icon: Icons.security_rounded,
-                      title: 'Privacy & Security',
-                      onTap: () {},
                     ),
                     _buildSettingsTile(
                       icon: Icons.logout_rounded,
