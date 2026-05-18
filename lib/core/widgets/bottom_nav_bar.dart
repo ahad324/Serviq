@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:serviq/features/tracking/presentation/providers/tracking_provider.dart';
 import '../theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends ConsumerWidget {
   final String currentRoute;
 
   const BottomNavBar({super.key, required this.currentRoute});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -51,7 +53,10 @@ class BottomNavBar extends StatelessWidget {
                 activeIcon: Icons.location_on_rounded,
                 label: 'Tracking',
                 isActive: currentRoute == '/tracking',
-                onTap: () => context.go('/tracking'),
+                onTap: () {
+                  ref.read(selectedBookingIdProvider.notifier).set(null);
+                  context.go('/tracking');
+                },
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,

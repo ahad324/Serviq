@@ -8,6 +8,7 @@ import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/core/widgets/bottom_nav_bar.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
+import 'package:serviq/features/common/domain/models/booking_model.dart' as models;
 
 class TrackingScreen extends ConsumerStatefulWidget {
   const TrackingScreen({super.key});
@@ -50,12 +51,14 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     });
 
     // Show confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('✓ $step marked as done'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✓ $step marked as done'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   String _getNextIncompleteStep() {
@@ -96,10 +99,19 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
         ),
       ),
       body: bookingState.when(
-        data: (booking) {
-          if (booking == null) return const SizedBox.shrink();
+        data: (response) {
+          if (response == null) return const SizedBox.shrink();
 
-          final lifecycle = booking.lifecycle;
+          // Mock lifecycle for simulation purposes as ServiceResponse doesn't have it
+          final lifecycle = models.Lifecycle(
+            confirmed: models.StageInfo(stage: 'confirmed', at: _stepTimes['confirmed']),
+            enRoute: models.StageInfo(stage: 'en_route', message: 'Provider is en-route'),
+            arrival: models.StageInfo(stage: 'arrival', eta: _stepTimes['confirmed']?.add(const Duration(minutes: 15))),
+            inProgress: models.StageInfo(stage: 'in_progress'),
+            completion: models.StageInfo(stage: 'completion'),
+            feedback: models.StageInfo(stage: 'feedback'),
+          );
+
           final confirmedAt = lifecycle.confirmed.at ?? DateTime.now();
           final etaTime =
               lifecycle.arrival.eta ??
@@ -147,7 +159,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.1),
+                                      color: AppColors.primary.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(
@@ -219,7 +231,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -257,7 +269,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
