@@ -16,24 +16,20 @@ Serviq has successfully transitioned from an initial prototype to a **production
 ## 📅 Multi-Phase Engineering Timeline
 
 ```mermaid
-gantt
-    title Serviq Implementation Phases
-    dateFormat  YYYY-MM-DD
-    section Phase 1: Core
-    UI Base & Foundation Setup     :done,    des1, 2026-05-10, 2026-05-12
-    Central Theme & Colors         :done,    des2, 2026-05-11, 2026-05-12
-    section Phase 2: AI Sync
-    n8n Webhook Integration       :done,    des3, 2026-05-13, 2026-05-14
-    Dio Network & Location Layer   :done,    des4, 2026-05-13, 2026-05-14
-    section Phase 3: Lifecycle
-    Simulated 5-Step Stepper       :done,    des5, 2026-05-15, 2026-05-16
-    Supabase DB Persistence        :done,    des6, 2026-05-15, 2026-05-16
-    section Phase 4: CI/CD
-    GitHub Actions Deployment      :done,    des7, 2026-05-17, 2026-05-18
-    Release Automation             :done,    des8, 2026-05-17, 2026-05-18
-    section Future Scale
-    Phase 5: Voice Processing      :active,  des9, 2026-05-19, 2026-05-22
-    Phase 6: Live WebSockets       :         des10, 2026-05-23, 2026-05-28
+flowchart LR
+    classDef complete fill:#e6f4ea,stroke:#137333,stroke-width:2px,color:#137333;
+    classDef active fill:#fef7e0,stroke:#b06000,stroke-width:2px,color:#b06000;
+    classDef future fill:#f1f3f4,stroke:#5f6368,stroke-width:1px,color:#5f6368;
+
+    p1["🟢 Phase 1: Core Foundation<br>(May 10 - May 12)"]:::complete
+    p2["🟢 Phase 2: AI Orchestration<br>(May 13 - May 14)"]:::complete
+    p3["🟢 Phase 3: Lifecycle Sync<br>(May 15 - May 16)"]:::complete
+    p4["🟢 Phase 4: CI/CD Setup<br>(May 17 - May 18)"]:::complete
+    p5["🟢 Phase 5: Voice & NLP<br>(May 19 - May 22)"]:::complete
+    p6["🟡 Phase 6: WebSockets & GPS<br>(May 23 - May 28)"]:::active
+    p7["⚪ Phase 7: Payment Gateways<br>(June 01 - June 07)"]:::future
+
+    p1 --> p2 --> p3 --> p4 --> p5 --> p6 --> p7
 ```
 
 ---
@@ -66,16 +62,18 @@ gantt
   * Enabled automated GitHub Pages deployment for instantaneous web previews.
   * Automated GitHub Releases publishing compiled Android APK assets.
 
+### 🟩 Phase 5: Voice Processing & NLP Enhancement (Complete)
+* **Milestones**:
+  * Created the abstracted [AppSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper.dart) layer separating platform speech logic.
+  * Programmed [MobileSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_mobile.dart) leveraging mobile-native `speech_to_text` engines.
+  * Integrated [WebSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_web.dart) natively tapping Chrome/Safari browser `html.SpeechRecognition` APIs to bypass plugin failures on web compile.
+  * Redesigned the NLP prompt space in [InputScreen](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/presentation/screens/input_screen.dart) to offer inline toggling, audio wave listening indicators, and microphone input streams.
+
 ---
 
 ## 📈 Future Scale Targets
 
-### 🔮 Phase 5: Voice Processing & NLP Enhancement
-* **Objectives**:
-  * Integrate on-device Speech-to-Text (STT) services directly linked to the microphone action in the NLP search bar.
-  * Enhance the Urdu-English linguistic model on n8n to support direct audio payload analysis.
-
-### 🔮 Phase 6: Live WebSockets & GPS Tracking
+### 🔮 Phase 6: Live WebSockets & GPS Tracking (Active)
 * **Objectives**:
   * Replace the simulated timer inside `TrackingNotifier` with a persistent websocket channel.
   * Bind the `TrackingScreen` to a live Geolocator stream updating a geographic Google Map interface as a real technician moves closer.

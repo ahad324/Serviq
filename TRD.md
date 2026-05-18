@@ -136,6 +136,40 @@ The application enforces strict separation of UI and state using specialized Riv
 
 ---
 
+## 🎙️ Cross-Platform Speech Recognition Architecture
+
+To support robust voice-to-text inputs across both native mobile installations and web builds without risking compilation crashes, Serviq utilizes a **conditional import abstraction architecture** via an abstract factory pattern:
+
+### 1. Architectural Map
+```text
+                  ┌───────────────────────┐
+                  │    AppSpeechHelper    │  ◄─── (Core Interface Layer)
+                  │  (Abstract Singleton) │
+                  └───────────▲───────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          │ (Mobile Build)    │ (Web Build)       │ (Unsupported / Stub)
+          ▼                   ▼                   ▼
+┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐
+│MobileSpeechHelper │ │  WebSpeechHelper  │ │ StubSpeechHelper  │
+│ (speech_to_text)  │ │(SpeechRecognition)│ │ (Baseline errors) │
+└───────────────────┘ └───────────────────┘ └───────────────────┘
+```
+
+### 2. Implementation Specifications
+* **Core Abstraction ([AppSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper.dart))**: Declares the singleton contract factory:
+  ```dart
+  import 'speech_helper_stub.dart'
+      if (dart.library.html) 'speech_helper_web.dart'
+      if (dart.library.io) 'speech_helper_mobile.dart';
+  ```
+  This conditional import compile directive dynamically binds the target compilation code. If building for web, the Dart compiler injects the JS-interop wrapper; if mobile, it binds to native mobile plugins, bypassing missing reference errors.
+* **Web Implementation ([WebSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_web.dart))**: Leverages browser-native HTML5 Web Speech APIs (`html.SpeechRecognition`) through direct JS-interop, mapping browser callbacks natively to prevent reliance on third-party mobile microphone extensions.
+* **Mobile Implementation ([MobileSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_mobile.dart))**: Integrates the `speech_to_text` (v7.3.0) library, interfacing with native Android Speech Service and Apple Speech Frameworks.
+
+---
+
+
 ## ⚠️ Network & Location Fail-Safe Policies
 
 ### 1. Mandatory Location Access (`LOCATION_REQUIRED`)

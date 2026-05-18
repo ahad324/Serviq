@@ -63,7 +63,7 @@ The primary product goal is to establish a seamless, high-trust matching experie
 
 | ID | Feature Module | Requirement Description | Priority | Complexity |
 | :--- | :--- | :--- | :--- | :--- |
-| **FR-01** | NLP Input | Parse English/Urdu inputs and capture live coordinate streams. | P0 | High |
+| **FR-01** | NLP Input | Parse conversational English/Urdu inputs via structured text or dynamic voice-to-text streams (Speech-to-Text) and capture live coordinate streams. | P0 | High |
 | **FR-02** | AI Agent Sync | Sequence Intent, Matching, Decision, Pricing, and Booking agents in n8n. | P0 | High |
 | **FR-03** | Matching UI | Display recommendation list with specific AI reasons for each match. | P0 | Medium |
 | **FR-04** | Pricing Engine | Calculate dynamic pricing line-items based on provider base fees. | P0 | Medium |

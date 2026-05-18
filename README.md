@@ -80,6 +80,7 @@ sequenceDiagram
 ## ✨ Features & Capabilities
 
 * **🗣️ Bilingual Semantic Input**: Advanced comprehension of unstructured English and Urdu queries including phonetic spellings, regional expressions, and contextual time reference markers.
+* **🎙️ Cross-Platform Speech Recognition**: Fully integrated voice-to-text module leveraging mobile-native `speech_to_text` engines and native HTML5 `SpeechRecognition` APIs for web builds, allowing seamless voice inputs across both platforms.
 * **📍 Live Location Capture**: Enforces mandatory GPS coordinate resolution before processing, mapping distances in real time for precise local provider scoring.
 * **🤖 Multi-Agent Logic Engine**: Leverages five specialized LLM agents working sequentially:
   * **Intent Agent**: Identifies service type, maps it to Google Place category, and sets urgency factors.
@@ -98,6 +99,7 @@ sequenceDiagram
 
 ### Frontend (Flutter Client)
 * **State Management**: [Riverpod (AsyncNotifier)](https://pub.dev/packages/flutter_riverpod) for reactive, thread-safe asynchronous API state loops.
+* **Voice Processing**: [speech_to_text](https://pub.dev/packages/speech_to_text) (v7.3.0) for native iOS/Android transcription, with conditional fallback to HTML `SpeechRecognition` for web platforms.
 * **Routing System**: [GoRouter](https://pub.dev/packages/go_router) with redirection guards mapping sessions and deep navigation.
 * **Animations**: [Flutter Animate](https://pub.dev/packages/flutter_animate) for micro-animations, [Lottie](https://pub.dev/packages/lottie) for vector loading indicators, and [Shimmer](https://pub.dev/packages/shimmer) for skeleton placeholders.
 * **HTTP Client**: [Dio](https://pub.dev/packages/dio) with global timeout configurations for fail-safe agent polling.

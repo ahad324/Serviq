@@ -81,8 +81,11 @@ The design language enforces absolute consistency by reusing central premium com
 * **UX Strategy**: During sign up, presents an interactive location validation banner that requests permissions, rendering a green success checkmark upon verification.
 
 ### 3. NLP Input Screen (`/home`)
-* **Design**: Clean minimal prompt space with a conversational input box, Urdu/English placeholders, microphone shortcuts, and bottom navigation access.
-* **UX Strategy**: Captures coordinates silently. Direct CTA click moves to AI analysis immediately.
+* **Design**: Clean minimal prompt space with a conversational input box, Urdu/English placeholders, dynamic microphone input overlays, and bottom navigation access.
+* **UX Strategy**: 
+  * Captures coordinates silently. Direct CTA click moves to AI analysis immediately.
+  * **Microphone Voice Overlay**: Clicking the microphone button requests audio permissions silently. Once granted, it expands into an elegant **pulsing voice-listening waveform overlay** utilizing circular ripple scale animations. 
+  * **Real-time Transcription**: Transcribed words are streamed directly into the text field in real-time, utilizing soft fades. Tapping "Done" or pausing for 5 seconds automatically completes the transaction, preparing the transcribed string for AI intent parsing.
 
 ### 4. AI Understanding Screen (`/ai-understanding`)
 * **Design**: A rotating progress circle and glowing star icon backed by a beautiful linear status indicator.
