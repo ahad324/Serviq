@@ -78,13 +78,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _updateLocation() async {
     final locationService = ref.read(locationServiceProvider);
-    
-    // Show a small loader while fetching location
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Row(
           children: [
-            SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+            SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
             SizedBox(width: 12),
             Text('Updating live location...'),
           ],
@@ -137,77 +139,87 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text('Change Password', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
-          content: Form(
-            key: dialogFormKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PremiumTextField(
-                    controller: currentPasswordController,
-                    label: 'Current Password',
-                    hint: '••••••••',
-                    prefixIcon: Icons.lock_outline_rounded,
-                    isPassword: true,
-                    validator: (v) => v!.isEmpty ? 'Enter current password' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  PremiumTextField(
-                    controller: newPasswordController,
-                    label: 'New Password',
-                    hint: '••••••••',
-                    prefixIcon: Icons.security_rounded,
-                    isPassword: true,
-                    validator: AppValidators.validatePassword,
-                  ),
-                  const SizedBox(height: 16),
-                  PremiumTextField(
-                    controller: confirmPasswordController,
-                    label: 'Confirm New Password',
-                    hint: '••••••••',
-                    prefixIcon: Icons.shield_outlined,
-                    isPassword: true,
-                    validator: (v) => v != newPasswordController.text ? 'Passwords do not match' : null,
-                  ),
-                ],
+          title: Text('Change Password',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800)),
+          content: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Form(
+              key: dialogFormKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PremiumTextField(
+                      controller: currentPasswordController,
+                      label: 'Current Password',
+                      hint: '••••••••',
+                      prefixIcon: Icons.lock_outline_rounded,
+                      isPassword: true,
+                      validator: (v) => v!.isEmpty ? 'Enter current password' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    PremiumTextField(
+                      controller: newPasswordController,
+                      label: 'New Password',
+                      hint: '••••••••',
+                      prefixIcon: Icons.security_rounded,
+                      isPassword: true,
+                      validator: AppValidators.validatePassword,
+                    ),
+                    const SizedBox(height: 16),
+                    PremiumTextField(
+                      controller: confirmPasswordController,
+                      label: 'Confirm New Password',
+                      hint: '••••••••',
+                      prefixIcon: Icons.shield_outlined,
+                      isPassword: true,
+                      validator: (v) =>
+                          v != newPasswordController.text ? 'Passwords do not match' : null,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.textSecondary)),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(color: AppColors.textSecondary)),
             ),
             PremiumButton(
               text: 'Update',
               isLoading: isDialogLoading,
               onPressed: () async {
                 if (!dialogFormKey.currentState!.validate()) return;
-                
+
                 setDialogState(() => isDialogLoading = true);
                 try {
                   final user = ref.read(sessionNotifierProvider);
                   final repository = ref.read(authRepositoryProvider);
-                  
+
                   await repository.updatePassword(
                     userId: user!.id,
                     currentPassword: currentPasswordController.text,
                     newPassword: newPasswordController.text,
                   );
-                  
+
                   if (mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('✓ Password updated successfully'), backgroundColor: AppColors.success),
+                      const SnackBar(
+                          content: Text('✓ Password updated successfully'),
+                          backgroundColor: AppColors.success),
                     );
                   }
                 } on AppAuthException catch (e) {
                   _showError(e.message);
                 } finally {
-                  setDialogState(() => isDialogLoading = false);
+                  if (mounted) setDialogState(() => isDialogLoading = false);
                 }
               },
             ),
@@ -258,8 +270,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 subtitle: 'Manage your account and preferences',
               ),
               const SizedBox(height: 32),
-              
-              // Profile Card
+
               PremiumCard(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -273,17 +284,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 2),
+                              border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: 0.2), width: 2),
                             ),
-                            child: const Icon(Icons.person_rounded, size: 50, color: AppColors.primary),
+                            child: const Icon(Icons.person_rounded,
+                                size: 50, color: AppColors.primary),
                           ),
                           Positioned(
                             bottom: 0,
                             right: 0,
                             child: Container(
                               padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                              child: const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
+                              decoration: const BoxDecoration(
+                                  color: AppColors.primary, shape: BoxShape.circle),
+                              child:
+                                  const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
                             ),
                           ),
                         ],
@@ -317,7 +332,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 Expanded(
                                   child: TextButton(
                                     onPressed: () => setState(() => _isEditing = false),
-                                    child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+                                    child: Text('Cancel',
+                                        style: GoogleFonts.inter(
+                                            color: AppColors.textSecondary,
+                                            fontWeight: FontWeight.w600)),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -355,10 +373,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
-              // Settings/Actions
+
               PremiumCard(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
@@ -415,8 +432,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                user.locationLat != null 
-                    ? '${user.locationLat?.toStringAsFixed(4)}, ${user.locationLng?.toStringAsFixed(4)}' 
+                user.locationLat != null
+                    ? '${user.locationLat?.toStringAsFixed(4)}, ${user.locationLng?.toStringAsFixed(4)}'
                     : 'Not Set',
                 style: GoogleFonts.inter(
                   fontSize: 16,
@@ -497,7 +514,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           color: color,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textDisabled),
+      trailing:
+          const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textDisabled),
     );
   }
 }

@@ -51,8 +51,8 @@ class SessionNotifier extends Notifier<UserModel?> {
       try {
         final user = UserModel.fromJson(jsonDecode(savedUserJson));
         state = user;
-      } catch (e) {
-        print('Failed to restore session from storage: $e');
+      } catch (_) {
+        // Fail silently
       }
     }
   }
@@ -73,16 +73,16 @@ class SessionNotifier extends Notifier<UserModel?> {
     try {
       final userJson = jsonEncode(user.toJson());
       await _prefs.setString(_sessionKey, userJson);
-    } catch (e) {
-      print('Failed to save session: $e');
+    } catch (_) {
+      // Fail silently
     }
   }
 
   Future<void> _clearSession() async {
     try {
       await _prefs.remove(_sessionKey);
-    } catch (e) {
-      print('Failed to clear session: $e');
+    } catch (_) {
+      // Fail silently
     }
   }
 

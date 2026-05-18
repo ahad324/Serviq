@@ -61,9 +61,6 @@ class ServiceRepositoryImpl implements ServiceRepository {
         },
       );
 
-      print("STATUS: ${response.statusCode}");
-      print("DATA: ${response.data}");
-
       final Map<String, dynamic> data =
           _extractData(response.data);
 
@@ -76,15 +73,11 @@ class ServiceRepositoryImpl implements ServiceRepository {
     } on ServiceApiException {
       rethrow;
     } on DioException catch (e) {
-      print("DIO ERROR: ${e.response?.data}");
-
       final Map<String, dynamic> data =
           _extractData(e.response?.data);
 
       throw ServiceApiException(data);
     } catch (e) {
-      print("UNKNOWN ERROR: $e");
-
       throw ServiceApiException({
         'message': 'Something went wrong',
         'hint': 'Please try again',

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/auth/presentation/providers/session_provider.dart';
+import 'package:serviq/features/tracking/presentation/providers/tracking_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class BookingHistoryScreen extends ConsumerWidget {
@@ -81,13 +82,13 @@ class BookingHistoryScreen extends ConsumerWidget {
   }
 }
 
-class _BookingCard extends StatelessWidget {
+class _BookingCard extends ConsumerWidget {
   final Map<String, dynamic> booking;
 
   const _BookingCard({required this.booking});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final status = booking['status'] as String;
     final date = DateTime.parse(booking['created_at'].toString());
     final providerName = booking['provider_name']?.toString() ?? 'Provider Pending';
@@ -95,7 +96,10 @@ class _BookingCard extends StatelessWidget {
     final rating = (booking['Rating'] as num?)?.toInt() ?? 0;
     
     return InkWell(
-      onTap: () => context.go('/tracking', extra: booking['id']),
+      onTap: () {
+        ref.read(selectedBookingIdProvider.notifier).set(booking['id']);
+        context.go('/tracking', extra: booking['id']);
+      },
       borderRadius: BorderRadius.circular(24),
       child: PremiumCard(
         padding: const EdgeInsets.all(24),
