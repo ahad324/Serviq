@@ -30,7 +30,7 @@ git push -u origin main
 
 ## 🔄 Automated Deployment Loop
 
-Every subsequent push to the default branch will automatically trigger the compilation, testing, and release cycle:
+Every subsequent push to the default branch will automatically trigger the compilation and release cycle:
 
 ```bash
 # 1. Save and commit code modifications
@@ -51,4 +51,4 @@ git push origin main
     👉 **[https://ahad324.github.io/Serviq/](https://ahad324.github.io/Serviq/)**
   * **Android APK (GitHub Releases)**: Automatically packaged and published to:  
     👉 **[https://github.com/ahad324/Serviq/releases](https://github.com/ahad324/Serviq/releases)**
-* **Failed Statuses**: In case of a red status indicator, click the specific running action job inside the Actions tab to investigate console logs. Common fails are usually caused by incorrect package signatures or missing Supabase environment variables.
+* **Failed Statuses**: In case of a red status indicator, click the specific running action job inside the Actions tab to investigate console logs. Common failures are usually caused by incorrect package signatures or missing Supabase environment variables.

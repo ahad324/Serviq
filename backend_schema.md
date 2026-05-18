@@ -28,8 +28,8 @@ The Flutter client submits NLP queries along with resolved user location coordin
 | :--- | :--- | :--- | :--- | :--- |
 | `query` | `String` | Non-Nullable | Unstructured natural language request in English, Urdu, or Romanized hybrid. | `"Mujhe kal AC repair chahiye"` |
 | `test` | `Boolean` | Non-Nullable | Runs in production mode when `false`. Test mock configurations trigger if set to `true`. | `false` |
-| `latitude` | `Double` | Non-Nullable | Precise client-side GPS latitude coordinate captured via [LocationService](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/services/location_service.dart). | `31.568490` |
-| `longitude`| `Double` | Non-Nullable | Precise client-side GPS longitude coordinate captured via [LocationService](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/services/location_service.dart). | `74.291660` |
+| `latitude` | `Double` | Non-Nullable | Precise client-side GPS latitude coordinate captured via [LocationService](./lib/core/services/location_service.dart). | `31.568490` |
+| `longitude`| `Double` | Non-Nullable | Precise client-side GPS longitude coordinate captured via [LocationService](./lib/core/services/location_service.dart). | `74.291660` |
 
 ---
 

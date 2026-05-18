@@ -121,16 +121,16 @@ WITH CHECK (auth.uid() = user_id);
 
 The application enforces strict separation of UI and state using specialized Riverpod providers:
 
-1. **[sessionNotifierProvider](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/auth/presentation/providers/session_provider.dart#L58)**:
+1. **[sessionNotifierProvider](./lib/features/auth/presentation/providers/session_provider.dart#L58)**:
    * **Type**: `NotifierProvider<SessionNotifier, UserModel?>`
    * **Role**: Tracks Supabase session events (signedIn, signedOut, tokenRefreshed) and auto-updates user metadata across the application.
-2. **[serviceBookingProvider](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/presentation/providers/input_provider.dart#L7)**:
+2. **[serviceBookingProvider](./lib/features/input/presentation/providers/input_provider.dart#L7)**:
    * **Type**: `AsyncNotifierProvider<ServiceBookingNotifier, ServiceResponse?>`
    * **Role**: Handles asynchronous NLP requests, retrieves live user GPS locations, and updates matching lists.
-3. **[selectedProviderProvider](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/presentation/providers/input_provider.dart#L20)**:
+3. **[selectedProviderProvider](./lib/features/input/presentation/providers/input_provider.dart#L20)**:
    * **Type**: `NotifierProvider<SelectedProviderNotifier, ServiceProvider?>`
    * **Role**: Stores the active technician chosen by the user during the booking checkout flow.
-4. **[trackingProvider](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/tracking/presentation/providers/tracking_provider.dart#L5)**:
+4. **[trackingProvider](./lib/features/tracking/presentation/providers/tracking_provider.dart#L5)**:
    * **Type**: `NotifierProvider<TrackingNotifier, TrackingState>`
    * **Role**: Drives the simulated 5-stage lifecycle stepper progress (Confirmed ➔ En Route ➔ Arrived ➔ Working ➔ Completed).
 
@@ -157,15 +157,15 @@ To support robust voice-to-text inputs across both native mobile installations a
 ```
 
 ### 2. Implementation Specifications
-* **Core Abstraction ([AppSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper.dart))**: Declares the singleton contract factory:
+* **Core Abstraction ([AppSpeechHelper](./lib/core/utils/speech_helper.dart))**: Declares the singleton contract factory:
   ```dart
   import 'speech_helper_stub.dart'
       if (dart.library.html) 'speech_helper_web.dart'
       if (dart.library.io) 'speech_helper_mobile.dart';
   ```
   This conditional import compile directive dynamically binds the target compilation code. If building for web, the Dart compiler injects the JS-interop wrapper; if mobile, it binds to native mobile plugins, bypassing missing reference errors.
-* **Web Implementation ([WebSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_web.dart))**: Leverages browser-native HTML5 Web Speech APIs (`html.SpeechRecognition`) through direct JS-interop, mapping browser callbacks natively to prevent reliance on third-party mobile microphone extensions.
-* **Mobile Implementation ([MobileSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_mobile.dart))**: Integrates the `speech_to_text` (v7.3.0) library, interfacing with native Android Speech Service and Apple Speech Frameworks.
+* **Web Implementation ([WebSpeechHelper](./lib/core/utils/speech_helper_web.dart))**: Leverages browser-native HTML5 Web Speech APIs (`html.SpeechRecognition`) through direct JS-interop, mapping browser callbacks natively to prevent reliance on third-party mobile microphone extensions.
+* **Mobile Implementation ([MobileSpeechHelper](./lib/core/utils/speech_helper_mobile.dart))**: Integrates the `speech_to_text` (v7.3.0) library, interfacing with native Android Speech Service and Apple Speech Frameworks.
 
 ---
 
@@ -174,11 +174,11 @@ To support robust voice-to-text inputs across both native mobile installations a
 
 ### 1. Mandatory Location Access (`LOCATION_REQUIRED`)
 * **Technical Rule**: Client must reject query submission if live location cannot be resolved.
-* **Mechanism**: Handled in [ServiceBookingNotifier.submitQuery](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/presentation/providers/input_provider.dart#L30-L52). Calls [LocationService](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/services/location_service.dart#L4-L34) to query Geolocator hardware. If permission is denied or services are disabled, returns a clean error caught by the UI to show permission requests.
+* **Mechanism**: Handled in [ServiceBookingNotifier.submitQuery](./lib/features/input/presentation/providers/input_provider.dart#L30-L52). Calls [LocationService](./lib/core/services/location_service.dart#L4-L34) to query Geolocator hardware. If permission is denied or services are disabled, returns a clean error caught by the UI to show permission requests.
 
 ### 2. Global Network Timeout Safeguards
-* **Dio Config**: Centrally defined in [dioProvider](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/data/repositories/service_repository.dart#L62-L69) with 30-second limitations:
+* **Dio Config**: Centrally defined in [dioProvider](./lib/features/input/data/repositories/service_repository.dart#L62-L69) with 30-second limitations:
   * `connectTimeout`: 30 seconds
   * `receiveTimeout`: 30 seconds
   * `sendTimeout`: 30 seconds
-* **Watchdog Timer**: Integrated inside the processing animation loop of [AIUnderstandingScreen](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/matching/presentation/screens/ai_understanding_screen.dart#L38-L69). If 60 seconds pass without an API response, the watchdog triggers a modal dialog prompting the user to safely return home, preventing perpetual client freezing.
+* **Watchdog Timer**: Integrated inside the processing animation loop of [AIUnderstandingScreen](./lib/features/matching/presentation/screens/ai_understanding_screen.dart#L38-L69). If 60 seconds pass without an API response, the watchdog triggers a modal dialog prompting the user to safely return home, preventing perpetual client freezing.

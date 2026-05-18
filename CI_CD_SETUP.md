@@ -4,7 +4,7 @@
 * **Document Version**: 1.1.0
 * **Date**: May 2026
 * **Status**: Complete / Production-Ready
-* **Automation Workflow**: [build-and-release.yml](file:///g:/Ahad/Mobile_Application_Dev/serviq/.github/workflows/build-and-release.yml)
+* **Automation Workflow**: [build-and-release.yml](./.github/workflows/build-and-release.yml)
 
 ---
 

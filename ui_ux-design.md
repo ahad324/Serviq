@@ -10,7 +10,7 @@
 
 ## 🎨 Centralized Color Palette (Design Tokens)
 
-The application adheres strictly to a signature color palette. Colors must not be hardcoded in UI files and must only be referenced from [AppColors](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/theme/app_colors.dart):
+The application adheres strictly to a signature color palette. Colors must not be hardcoded in UI files and must only be referenced from [AppColors](./lib/core/theme/app_colors.dart):
 
 ```text
 █ Cyprus Primary       #004643  ➔ Primary Brand Action Color
@@ -31,7 +31,7 @@ To ensure a modern and clean aesthetic, Serviq implements a dual-font typographi
 
 1. **Headings, Buttons, and Branding**: **Plus Jakarta Sans**
    * Selected for its bold geometric shapes and premium high-tech look.
-   * Applied in [AppLogo](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L130), [PremiumButton](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L52), and screen titles.
+   * Applied in [AppLogo](./lib/core/widgets/premium_widgets.dart#L130), [PremiumButton](./lib/core/widgets/premium_widgets.dart#L52), and screen titles.
 2. **Body, Form Fields, and Details**: **Inter**
    * Highly readable, standard neutral grotesque font optimized for high-density reading.
    * Applied in lists, address fields, and price rows.
@@ -42,28 +42,28 @@ To ensure a modern and clean aesthetic, Serviq implements a dual-font typographi
 
 The design language enforces absolute consistency by reusing central premium components:
 
-### 1. [PremiumCard](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L6-L50)
+### 1. [PremiumCard](./lib/core/widgets/premium_widgets.dart#L6-L50)
 * **Design Specifications**:
   * Circular border radius of `24.0`.
   * Double-layered shadow system: a soft primary-tinted glow (`AppColors.primary.withValues(alpha: 0.04)`) with a blur radius of 24, overlaid on a micro-black ambient shadow.
 
-### 2. [PremiumButton](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L52-L128)
+### 2. [PremiumButton](./lib/core/widgets/premium_widgets.dart#L52-L128)
 * **Design Specifications**:
   * Rigid height of `58.0` with `20.0` border radius.
   * Linear gradient blending Primary Cyprus to Cyprus Light.
   * Responsive, built-in dynamic loader overlaying actions during network states.
 
-### 3. [PremiumTextField](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L196-L300)
+### 3. [PremiumTextField](./lib/core/widgets/premium_widgets.dart#L196-L300)
 * **Design Specifications**:
   * Double-layered label and hint structure.
   * `20.0` border radius with fine `0.06` opacity black borders that transition into a thick `2.0` primary border when focused.
 
-### 4. [StatusBadge](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L331-L389)
+### 4. [StatusBadge](./lib/core/widgets/premium_widgets.dart#L331-L389)
 * **Design Specifications**:
   * Pulsating status indicator dot backed by a repeating fade in/out animation.
   * Bold, uppercase tracked lettering for maximum scannability.
 
-### 5. [GlassContainer](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L302-L329)
+### 5. [GlassContainer](./lib/core/widgets/premium_widgets.dart#L302-L329)
 * **Design Specifications**:
   * Backdrop filter blur of `10.0` with variable white opacity overlay.
   * Used for elegant floating headers and premium overlays.

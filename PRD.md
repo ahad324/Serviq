@@ -55,7 +55,7 @@ The primary product goal is to establish a seamless, high-trust matching experie
 
 ### 5. High-Trust Feedback Loop
 * **Technician Rating**: Enable users to rate their provider out of 5 stars.
-* **Issue Reporting**: Allow logging disputes or disputes to ensure long-term platform quality control.
+* **Issue Reporting**: Allow logging disputes or issues to ensure long-term platform quality control.
 
 ---
 

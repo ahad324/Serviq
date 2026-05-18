@@ -39,22 +39,22 @@ flowchart LR
 ### 🟩 Phase 1: Foundation & Custom UI Design (Complete)
 * **Milestones**:
   * Established modular directory structures separating presentation, domain, and data layers.
-  * Configured the [GoRouter](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/router/app_router.dart) system with redirect guards protecting home routes.
-  * Designed [AppTheme](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/theme/app_theme.dart) centralizing Cyprus `#004643` and Sand `#F0EDE5` tokens.
-  * Built reusable custom components ([PremiumCard](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L6), [PremiumButton](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L52), [PremiumTextField](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/widgets/premium_widgets.dart#L196)).
+  * Configured the [GoRouter](./lib/core/router/app_router.dart) system with redirect guards protecting home routes.
+  * Designed [AppTheme](./lib/core/theme/app_theme.dart) centralizing Cyprus `#004643` and Sand `#F0EDE5` tokens.
+  * Built reusable custom components ([PremiumCard](./lib/core/widgets/premium_widgets.dart#L6), [PremiumButton](./lib/core/widgets/premium_widgets.dart#L52), [PremiumTextField](./lib/core/widgets/premium_widgets.dart#L196)).
 
 ### 🟩 Phase 2: NLP Input & AI Agent Orchestration (Complete)
 * **Milestones**:
-  * Configured the [Dio network layer](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/data/repositories/service_repository.dart#L62-L69) with robust 30-second connection and transmission timeouts.
+  * Configured the [Dio network layer](./lib/features/input/data/repositories/service_repository.dart#L62-L69) with robust 30-second connection and transmission timeouts.
   * Connected client queries with the n8n Multi-Agent webhook pipeline.
-  * Integrated [LocationService](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/services/location_service.dart) to capture precise user coordinates.
-  * Developed the Perceived Performance loading screen ([AIUnderstandingScreen](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/matching/presentation/screens/ai_understanding_screen.dart)) with active processing watchdogs.
+  * Integrated [LocationService](./lib/core/services/location_service.dart) to capture precise user coordinates.
+  * Developed the Perceived Performance loading screen ([AIUnderstandingScreen](./lib/features/matching/presentation/screens/ai_understanding_screen.dart)) with active processing watchdogs.
 
 ### 🟩 Phase 3: Simulated Lifecycle & Data Sync (Complete)
 * **Milestones**:
-  * Developed the [StatusStepper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/tracking/presentation/widgets/status_stepper.dart) vertical stepper tracking real-time status transitions.
+  * Developed the [StatusStepper](./lib/features/tracking/presentation/widgets/status_stepper.dart) vertical stepper tracking real-time status transitions.
   * Enabled user authentication and persistent logging inside Supabase schemas.
-  * Programmed real-time progress simulation timers inside [TrackingNotifier](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/tracking/presentation/providers/tracking_provider.dart).
+  * Programmed real-time progress simulation timers inside [TrackingNotifier](./lib/features/tracking/presentation/providers/tracking_provider.dart).
 
 ### 🟩 Phase 4: Production Deployment & CI/CD Pipeline (Complete)
 * **Milestones**:
@@ -64,10 +64,10 @@ flowchart LR
 
 ### 🟩 Phase 5: Voice Processing & NLP Enhancement (Complete)
 * **Milestones**:
-  * Created the abstracted [AppSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper.dart) layer separating platform speech logic.
-  * Programmed [MobileSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_mobile.dart) leveraging mobile-native `speech_to_text` engines.
-  * Integrated [WebSpeechHelper](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/core/utils/speech_helper_web.dart) natively tapping Chrome/Safari browser `html.SpeechRecognition` APIs to bypass plugin failures on web compile.
-  * Redesigned the NLP prompt space in [InputScreen](file:///g:/Ahad/Mobile_Application_Dev/serviq/lib/features/input/presentation/screens/input_screen.dart) to offer inline toggling, audio wave listening indicators, and microphone input streams.
+  * Created the abstracted [AppSpeechHelper](./lib/core/utils/speech_helper.dart) layer separating platform speech logic.
+  * Programmed [MobileSpeechHelper](./lib/core/utils/speech_helper_mobile.dart) leveraging mobile-native `speech_to_text` engines.
+  * Integrated [WebSpeechHelper](./lib/core/utils/speech_helper_web.dart) natively tapping Chrome/Safari browser `html.SpeechRecognition` APIs to bypass plugin failures on web compile.
+  * Redesigned the NLP prompt space in [InputScreen](./lib/features/input/presentation/screens/input_screen.dart) to offer inline toggling, audio wave listening indicators, and microphone input streams.
 
 ---
 
