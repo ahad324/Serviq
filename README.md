@@ -38,8 +38,7 @@ sequenceDiagram
     actor User as Flutter Client
     participant Webhook as n8n Webhook
     participant Agents as Gemini AI Agents
-    participant Sheets as Google Sheets (Master DB)
-    participant DB as Supabase DB
+    participant DB as Supabase DB (Master DB)
 
     User->>Webhook: POST /service-request (Query + Lat/Lng)
 
@@ -49,8 +48,8 @@ sequenceDiagram
 
     Note over Agents: Analyze service domain, preferred times, and urgency multipliers (Urdu/English)
 
-    Webhook->>Sheets: Query candidate providers by service domain
-    Sheets-->>Webhook: Return list of candidate providers
+    Webhook->>DB: Query candidate providers by service domain
+    DB-->>Webhook: Return list of candidate providers
 
     Webhook->>Agents: Run Multi-Factor Matching Agent
 
@@ -109,7 +108,7 @@ sequenceDiagram
 ### Backend & Core APIs
 * **Orchestration**: n8n Webhook Workflow (Hosted on Railway).
 * **AI Cognitive Unit**: Google Gemini 1.5 Flash API.
-* **Database (Primary Master)**: Google Sheets (Dynamic provider indexing).
+* **Database (Primary Master)**: Supabase DB (Dynamic provider indexing & booking persistence).
 
 ---
 

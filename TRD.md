@@ -29,10 +29,10 @@ Serviq is built upon a modern, distributed architecture separating conversationa
 │      n8n AI WORKFLOW ENGINE       │        │  SUPABASE BACKEND  │
 ├───────────────────────────────────┤        ├────────────────────┤
 │  1. Intent & NLP parsing (Gemini) │        │ - Auth Session Mgmt│
-│  2. Provider list fetch (Sheets)  │        │ - Bookings Table   │
-│  3. Scoring & Filter (Gemini)     │        │ - Realtime Sync    │
-│  4. Match Decision (Gemini)       │        └────────────────────┘
-│  5. Pricing/Booking calc (Gemini) │
+│  2. Provider fetch (Supabase)     │        │ - Providers Table  │
+│  3. Scoring & Filter (Gemini)     │        │ - Bookings Table   │
+│  4. Match Decision (Gemini)       │        │ - Realtime Sync    │
+│  5. Pricing/Booking calc (Gemini) │        └────────────────────┘
 └───────────────────────────────────┘
 ```
 
@@ -46,7 +46,7 @@ The backend workflow processes conversational queries using a chain of five spec
    * **Input**: Conversational text query.
    * **Cognitive Tasks**: Identifies the primary service domain (e.g., plumbing), maps it to a standard Google Place type (e.g., plumber), evaluates urgency status, and assigns confidence percentages.
 2. **Matching Agent**:
-   * **Input**: Filtered provider list (from Google Sheets master index) + user GPS coordinates.
+   * **Input**: Filtered provider list (from Supabase master index) + user GPS coordinates.
    * **Cognitive Tasks**: Evaluates distance and historical ratings of up to 50 candidates, scoring them geographically.
 3. **Decision Agent**:
    * **Input**: Scored candidate pools.
