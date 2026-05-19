@@ -86,7 +86,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.COMMIT_SHA }}
-          name: "Release v${{ steps.version.outputs.VERSION }} - ${{ steps.version.outputs.BUILD_DATE }}"
+          name: "Release v${{ steps.version.outputs.VERSION }}"
           files: |
             artifacts/serviq.apk
           body: |
