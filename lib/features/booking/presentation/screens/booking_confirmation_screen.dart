@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
+import 'package:serviq/features/matching/domain/models/service_response.dart';
 
 class BookingConfirmationScreen extends ConsumerWidget {
   const BookingConfirmationScreen({super.key});
@@ -44,7 +45,9 @@ class BookingConfirmationScreen extends ConsumerWidget {
                 _buildConfirmationText(),
                 const SizedBox(height: 48),
                 _buildBookingCard(provider),
-                const SizedBox(height: 64),
+                const SizedBox(height: 16),
+                _buildContactRow(provider),
+                const SizedBox(height: 48),
                 PremiumButton(
                   text: 'Track Service Status',
                   icon: Icons.local_shipping_rounded,
@@ -118,7 +121,7 @@ class BookingConfirmationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBookingCard(dynamic provider) {
+  Widget _buildBookingCard(ServiceProvider provider) {
     return PremiumCard(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -161,5 +164,12 @@ class BookingConfirmationScreen extends ConsumerWidget {
         ],
       ),
     ).animate().fadeIn(delay: 600.milliseconds).slideY(begin: 0.1);
+  }
+
+  Widget _buildContactRow(ServiceProvider provider) {
+    return ProviderContactButtons(
+      phone: provider.phone,
+      whatsappTextLink: provider.whatsappTextLink,
+    ).animate().fadeIn(delay: 800.milliseconds).slideY(begin: 0.1);
   }
 }
