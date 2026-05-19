@@ -54,7 +54,7 @@ class ProviderContactButtons extends StatelessWidget {
 
     return Row(
       children: [
-        if (!hasPhone) ...[
+        if (hasPhone) ...[
           Expanded(
             child: _ContactActionButton(
               icon: const Icon(Icons.phone_rounded, size: 16, color: AppColors.primary),
