@@ -32,6 +32,7 @@ class ServiceProvider {
   final double rating;
   final int reviews;
   final String phone;
+  final String? whatsappTextLink;
   final String address;
   final Pricing pricing;
   final double lat;
@@ -49,6 +50,7 @@ class ServiceProvider {
     required this.rating,
     required this.reviews,
     required this.phone,
+    this.whatsappTextLink,
     required this.address,
     required this.pricing,
     required this.lat,
@@ -75,6 +77,7 @@ class ServiceProvider {
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       reviews: json['reviews'] ?? 0,
       phone: json['phone'] ?? '',
+      whatsappTextLink: json['whatsapptextlink'],
       address: json['address'] ?? '',
       pricing: Pricing.fromJson(json['pricing'] ?? {}),
       lat: (json['location']?['lat'] as num?)?.toDouble() ?? 0.0,

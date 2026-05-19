@@ -96,7 +96,12 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildProviderHeader(provider),
-                const SizedBox(height: 40),
+                const SizedBox(height: 16),
+                ProviderContactButtons(
+                  phone: provider.phone,
+                  whatsappTextLink: provider.whatsappTextLink,
+                ),
+                const SizedBox(height: 32),
                 Text(
                   'BILL SUMMARY',
                   style: GoogleFonts.inter(
