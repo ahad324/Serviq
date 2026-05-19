@@ -25,10 +25,10 @@ bool get _isMobileDevice {
 Future<void> _launchContactUrl(String urlString) async {
   final Uri url = Uri.parse(urlString);
   try {
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
-  } catch (_) {}
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    debugPrint('Error launching url: $e');
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ class ProviderContactButtons extends StatelessWidget {
 
     return Row(
       children: [
-        if (hasPhone) ...[
+        if (!hasPhone) ...[
           Expanded(
             child: _ContactActionButton(
               icon: const Icon(Icons.phone_rounded, size: 16, color: AppColors.primary),
