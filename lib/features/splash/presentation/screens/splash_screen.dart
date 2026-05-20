@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,7 +14,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  String _status = 'Initializing core modules...';
+  String _status = 'Establishing secure handshake...';
   double _progress = 0.0;
 
   @override
@@ -24,12 +25,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _simulateLoading() async {
     final steps = [
-      {'status': 'Initializing neural core...', 'duration': 600},
-      {'status': 'Syncing with Supabase clusters...', 'duration': 800},
-      {'status': 'Loading AI agent protocols...', 'duration': 900},
-      {'status': 'Fetching local provider database...', 'duration': 700},
-      {'status': 'Optimizing route processing...', 'duration': 500},
-      {'status': 'Systems Ready', 'duration': 300},
+      {'status': 'Establishing secure handshake...', 'duration': 600},
+      {'status': 'Syncing distributed database...', 'duration': 750},
+      {'status': 'Deploying cognitive agent mesh...', 'duration': 850},
+      {'status': 'Resolving spatial telemetry...', 'duration': 750},
+      {'status': 'Configuring execution framework...', 'duration': 600},
+      {'status': 'Ready', 'duration': 350},
     ];
 
     for (var i = 0; i < steps.length; i++) {
@@ -39,10 +40,9 @@ class _SplashScreenState extends State<SplashScreen> {
         _status = steps[i]['status'] as String;
       });
 
-      // Smooth progress bar movement
       double targetProgress = (i + 1) / steps.length;
       double startProgress = _progress;
-      int substeps = 20;
+      int substeps = 25;
       for (int j = 0; j <= substeps; j++) {
         await Future.delayed(Duration(milliseconds: (steps[i]['duration'] as int) ~/ substeps));
         if (!mounted) return;
@@ -63,90 +63,261 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Background Gradient Glows
-          Positioned(
-            top: -100,
-            right: -100,
-            child: _buildGlow(AppColors.primary.withValues(alpha: 0.08)),
-          ).animate().fadeIn(duration: 1000.milliseconds).scale(begin: const Offset(0.5, 0.5)),
-          
-          Positioned(
-            bottom: -50,
-            left: -50,
-            child: _buildGlow(AppColors.accent.withValues(alpha: 0.05)),
-          ).animate().fadeIn(duration: 1200.milliseconds, delay: 400.milliseconds),
-          
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const AppLogo(size: 32)
-                    .animate()
-                    .fadeIn(duration: 800.milliseconds)
-                    .scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut)
-                    .shimmer(delay: 1200.milliseconds, duration: 1500.milliseconds, color: AppColors.primaryLight),
-                const SizedBox(height: 24),
-                
-                // Progress Bar
-                SizedBox(
-                  width: 200,
-                  height: 6,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: _progress,
-                      backgroundColor: AppColors.surfaceDark,
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 600.milliseconds),
-                
-                const SizedBox(height: 16),
-                
-                // Status text
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: Text(
-                    _status,
-                    key: ValueKey(_status),
-                    style: GoogleFonts.plusJakartaSans(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                      letterSpacing: 0.2,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+          // 1. Radial/Linear Gradient Mesh Background
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.background,
+                  AppColors.background.withValues(alpha: 0.95),
+                  AppColors.surfaceDark.withValues(alpha: 0.3),
+                  AppColors.background,
+                ],
+              ),
             ),
           ),
           
-          // Bottom branding
+          // 2. Animated Ambient Glow Orbs
           Positioned(
-            bottom: 40,
+            top: -150,
+            right: -150,
+            child: _buildAmbientGlow(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              size: 450,
+            ),
+          ).animate().fadeIn(duration: 1200.milliseconds).scale(begin: const Offset(0.7, 0.7)),
+          
+          Positioned(
+            bottom: -100,
+            left: -100,
+            child: _buildAmbientGlow(
+              color: AppColors.accent.withValues(alpha: 0.08),
+              size: 400,
+            ),
+          ).animate().fadeIn(duration: 1500.milliseconds, delay: 300.milliseconds),
+
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.3,
+            left: MediaQuery.of(context).size.width * 0.1,
+            child: _buildAmbientGlow(
+              color: AppColors.primaryLight.withValues(alpha: 0.06),
+              size: 300,
+            ),
+          ).animate().fadeIn(duration: 1800.milliseconds, delay: 500.milliseconds),
+
+          // 3. Central Brand & Progress Interface
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 340),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Branding Logo
+                  _buildBrandLogoSection(),
+                  
+                  const SizedBox(height: 64),
+                  
+                  // Glassmorphic Loading Console Card
+                  _buildLoadingConsole(),
+                ],
+              ),
+            ),
+          ),
+          
+          // 4. Premium Footer
+          Positioned(
+            bottom: 48,
             left: 0,
             right: 0,
             child: Center(
-              child: Text(
-                'SERVIQ PREMIUM v1.0',
-                style: GoogleFonts.inter(
-                  color: AppColors.textDisabled,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'SERVIQ ORCHESTRATOR',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppColors.primary.withValues(alpha: 0.6),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'AGENTIC MATCHING SUITE • v1.1.0',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textDisabled,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
               ),
-            ).animate().fadeIn(delay: 2000.milliseconds),
+            ).animate().fadeIn(delay: 1500.milliseconds, duration: 800.milliseconds),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGlow(Color color) {
+  Widget _buildBrandLogoSection() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Pulsing outer shadow wrapper
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                blurRadius: 40,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: const AppLogo(size: 38, showText: false),
+        )
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .scale(
+          duration: 3.seconds,
+          begin: const Offset(1.0, 1.0),
+          end: const Offset(1.04, 1.04),
+          curve: Curves.easeInOut,
+        ),
+        
+        const SizedBox(height: 24),
+        
+        Text(
+          'SERVIQ',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: AppColors.primary,
+            letterSpacing: 6,
+          ),
+        ).animate().fadeIn(duration: 800.milliseconds).slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
+        
+        const SizedBox(height: 6),
+        
+        Text(
+          'LOCAL SERVICE ORCHESTRATOR',
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textSecondary.withValues(alpha: 0.7),
+            letterSpacing: 1.5,
+          ),
+        ).animate().fadeIn(duration: 1000.milliseconds, delay: 200.milliseconds).slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic),
+      ],
+    );
+  }
+
+  Widget _buildLoadingConsole() {
     return Container(
-      width: 400,
-      height: 400,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium Progress Bar Track & Glow Head
+              Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDark.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: _progress,
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.6),
+                            AppColors.primary,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 18),
+              
+              // Status text
+              SizedBox(
+                height: 20,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.15),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Text(
+                    _status,
+                    key: ValueKey(_status),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppColors.textPrimary.withValues(alpha: 0.8),
+                      fontSize: 13,
+                      letterSpacing: 0.2,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(delay: 800.milliseconds, duration: 600.milliseconds).slideY(begin: 0.15, end: 0, curve: Curves.easeOutCubic);
+  }
+
+  Widget _buildAmbientGlow({required Color color, required double size}) {
+    return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(

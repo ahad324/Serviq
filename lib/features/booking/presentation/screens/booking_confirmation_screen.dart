@@ -7,9 +7,11 @@ import 'package:serviq/core/theme/app_colors.dart';
 import 'package:serviq/core/widgets/premium_widgets.dart';
 import 'package:serviq/features/input/presentation/providers/input_provider.dart';
 import 'package:serviq/features/matching/domain/models/service_response.dart';
+import 'package:serviq/features/tracking/presentation/providers/tracking_provider.dart';
 
 class BookingConfirmationScreen extends ConsumerWidget {
-  const BookingConfirmationScreen({super.key});
+  final String? bookingId;
+  const BookingConfirmationScreen({super.key, this.bookingId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,7 +53,12 @@ class BookingConfirmationScreen extends ConsumerWidget {
                 PremiumButton(
                   text: 'Track Service Status',
                   icon: Icons.local_shipping_rounded,
-                  onPressed: () => context.go('/tracking'),
+                  onPressed: () {
+                    if (bookingId != null) {
+                      ref.read(selectedBookingIdProvider.notifier).set(bookingId);
+                    }
+                    context.go('/tracking', extra: bookingId);
+                  },
                 ),
                 const SizedBox(height: 16),
                 TextButton(

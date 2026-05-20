@@ -97,7 +97,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/booking-confirmation',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const BookingConfirmationScreen(),
+        builder: (context, state) {
+          final bookingId = state.extra as String?;
+          return BookingConfirmationScreen(bookingId: bookingId);
+        },
       ),
     ],
   );

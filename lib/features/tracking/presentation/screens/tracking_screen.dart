@@ -147,6 +147,8 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                       const SizedBox(height: 32),
                       _buildStatusCard(currentStatus),
                       const SizedBox(height: 32),
+                      _buildBookingDetailsCard(booking),
+                      const SizedBox(height: 32),
                       _buildTimeline(currentStatus),
                       const SizedBox(height: 32),
                       _buildActionButtons(bookingId, currentStatus, existingRating: existingRating),
@@ -271,6 +273,141 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  String _formatDateTime(dynamic dateTimeVal) {
+    if (dateTimeVal == null) return '';
+    try {
+      final DateTime dt;
+      if (dateTimeVal is DateTime) {
+        dt = dateTimeVal;
+      } else {
+        dt = DateTime.parse(dateTimeVal.toString());
+      }
+      final String day = dt.day.toString().padLeft(2, '0');
+      final String month = dt.month.toString().padLeft(2, '0');
+      final String year = dt.year.toString();
+      final String hour = dt.hour.toString().padLeft(2, '0');
+      final String minute = dt.minute.toString().padLeft(2, '0');
+      return '$day/$month/$year $hour:$minute';
+    } catch (_) {
+      return dateTimeVal.toString();
+    }
+  }
+
+  Widget _buildBookingDetailsCard(Map<String, dynamic> booking) {
+    final providerName = booking['provider_name'] ?? 'Unknown Provider';
+    final serviceType = booking['service_type'] ?? 'Service';
+    final scheduledTime = booking['scheduled_time'];
+    final address = booking['address'];
+    final totalPrice = booking['total_price'] ?? 0;
+
+    return PremiumCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'BOOKING DETAILS',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDisabled,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  serviceType.toString().toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildDetailRow(Icons.person_rounded, 'Provider', providerName),
+          const Divider(height: 24, color: AppColors.surfaceDark),
+          _buildDetailRow(Icons.calendar_today_rounded, 'Booking Date', _formatDateTime(booking['created_at'])),
+          const Divider(height: 24, color: AppColors.surfaceDark),
+          if (scheduledTime != null && scheduledTime.toString().isNotEmpty) ...[
+            _buildDetailRow(Icons.access_time_filled_rounded, 'Scheduled Time', _formatDateTime(scheduledTime)),
+            const Divider(height: 24, color: AppColors.surfaceDark),
+          ],
+          if (address != null && address.toString().isNotEmpty) ...[
+            _buildDetailRow(Icons.location_on_rounded, 'Service Address', address.toString()),
+            const Divider(height: 24, color: AppColors.surfaceDark),
+          ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Price',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              Text(
+                'PKR ${totalPrice.toInt()}',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: AppColors.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDisabled,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
