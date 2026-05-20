@@ -30,17 +30,23 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
       final grandTotal = provider.pricing.finalPrice.toInt();
 
       // Insert into Supabase so TrackingScreen works
-      await supabase.from('Bookings').insert({
+      final insertedBooking = await supabase.from('Bookings').insert({
         'user_id': user?.id,
         'status': 'confirmed',
         'service_type': response.intent.service,
         'provider_name': provider.name,
         'total_price': grandTotal,
+        'scheduled_time': response.intent.preferredTime,
+        'urgency': response.intent.urgency,
+        'address': provider.address,
+        'provider_id': provider.id,
         'created_at': DateTime.now().toIso8601String(),
-      });
+      }).select().single();
+
+      final bookingId = insertedBooking['id'] as String;
 
       if (mounted) {
-        context.go('/booking-confirmation');
+        context.go('/booking-confirmation', extra: bookingId);
       }
     } catch (e) {
       if (mounted) {

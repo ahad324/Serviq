@@ -68,7 +68,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         if (!silent) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✓ Location captured successfully'),
+              content: Text('✓ Service area verified successfully'),
               backgroundColor: AppColors.success,
               duration: Duration(seconds: 2),
             ),
@@ -277,7 +277,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 ),
                               const SizedBox(width: 12),
                               Text(
-                                _locationLat != null ? 'Location Captured' : 'Tap to enable location',
+                                _locationLat != null ? 'Service Area Verified' : 'Connect to nearby services',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -298,7 +298,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       onPressed: (_locationLat == null) ? () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Please enable location to proceed'),
+                            content: Text('Please verify your service area to proceed'),
                             backgroundColor: AppColors.warning,
                           ),
                         );

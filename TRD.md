@@ -96,6 +96,9 @@ CREATE TABLE public."Bookings" (
     provider_name text NOT NULL,
     total_price numeric NOT NULL,
     address text,
+    scheduled_time text,
+    urgency text,
+    provider_id text,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
