@@ -261,6 +261,8 @@ class ProviderListScreen extends ConsumerWidget {
           ProviderContactButtons(
             phone: provider.phone,
             whatsappTextLink: provider.whatsappTextLink,
+            mapsUrl: provider.mapsUrl,
+            website: provider.website,
           ),
 
           const SizedBox(height: 16),

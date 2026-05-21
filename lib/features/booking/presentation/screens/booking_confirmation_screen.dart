@@ -177,6 +177,8 @@ class BookingConfirmationScreen extends ConsumerWidget {
     return ProviderContactButtons(
       phone: provider.phone,
       whatsappTextLink: provider.whatsappTextLink,
+      mapsUrl: provider.mapsUrl,
+      website: provider.website,
     ).animate().fadeIn(delay: 800.milliseconds).slideY(begin: 0.1);
   }
 }
