@@ -31,55 +31,127 @@ Future<void> _launchContactUrl(String urlString) async {
   }
 }
 
+Future<void> _launchWebsiteUrl(String urlString) async {
+  String sanitized = urlString.trim();
+  if (!sanitized.startsWith('http://') && !sanitized.startsWith('https://')) {
+    sanitized = 'https://$sanitized';
+  }
+  final Uri url = Uri.parse(sanitized);
+  try {
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    debugPrint('Error launching website url: $e');
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-/// Reusable row of contact action buttons (Call + WhatsApp).
+/// Reusable row of contact action buttons (Call + WhatsApp + Website + Maps).
 /// Call button is only shown on mobile devices.
 // ─────────────────────────────────────────────────────────────────────────────
 class ProviderContactButtons extends StatelessWidget {
   final String phone;
   final String? whatsappTextLink;
+  final String? mapsUrl;
+  final String? website;
 
   const ProviderContactButtons({
     super.key,
     required this.phone,
     this.whatsappTextLink,
+    this.mapsUrl,
+    this.website,
   });
 
   @override
   Widget build(BuildContext context) {
     final hasPhone = phone.isNotEmpty && _isMobileDevice;
     final hasWhatsApp = whatsappTextLink != null && whatsappTextLink!.isNotEmpty;
+    final hasWebsite = website != null && website!.isNotEmpty;
+    final hasMaps = mapsUrl != null && mapsUrl!.isNotEmpty;
 
-    if (!hasPhone && !hasWhatsApp) return const SizedBox.shrink();
-
-    return Row(
-      children: [
-        if (hasPhone) ...[
-          Expanded(
-            child: _ContactActionButton(
-              icon: const Icon(Icons.phone_rounded, size: 16, color: AppColors.primary),
-              label: 'Call',
-              color: AppColors.primary,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.09),
-              onTap: () => _launchContactUrl('tel:${phone.replaceAll(' ', '')}'),
-            ),
+    final directRowChildren = <Widget>[];
+    if (hasPhone) {
+      directRowChildren.add(
+        Expanded(
+          child: _ContactActionButton(
+            icon: const Icon(Icons.phone_rounded, size: 16, color: AppColors.primary),
+            label: 'Call',
+            color: AppColors.primary,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.09),
+            onTap: () => _launchContactUrl('tel:${phone.replaceAll(' ', '')}'),
           ),
-          if (hasWhatsApp) const SizedBox(width: 12),
-        ],
-        if (hasWhatsApp)
-          Expanded(
-            child: _ContactActionButton(
-              icon: SvgPicture.string(
-                _kWhatsAppSvg,
-                width: 16,
-                height: 16,
-                colorFilter: const ColorFilter.mode(Color(0xFF25D366), BlendMode.srcIn),
-              ),
-              label: 'WhatsApp',
-              color: const Color(0xFF25D366),
-              backgroundColor: const Color(0xFF25D366).withValues(alpha: 0.10),
-              onTap: () => _launchContactUrl(whatsappTextLink!),
+        ),
+      );
+    }
+    if (hasWhatsApp) {
+      if (directRowChildren.isNotEmpty) {
+        directRowChildren.add(const SizedBox(width: 12));
+      }
+      directRowChildren.add(
+        Expanded(
+          child: _ContactActionButton(
+            icon: SvgPicture.string(
+              _kWhatsAppSvg,
+              width: 16,
+              height: 16,
+              colorFilter: const ColorFilter.mode(Color(0xFF25D366), BlendMode.srcIn),
             ),
+            label: 'WhatsApp',
+            color: const Color(0xFF25D366),
+            backgroundColor: const Color(0xFF25D366).withValues(alpha: 0.10),
+            onTap: () => _launchContactUrl(whatsappTextLink!),
+          ),
+        ),
+      );
+    }
+
+    final trustRowChildren = <Widget>[];
+    if (hasWebsite) {
+      trustRowChildren.add(
+        Expanded(
+          child: _ContactActionButton(
+            icon: const Icon(Icons.language_rounded, size: 16, color: AppColors.primary),
+            label: 'Website',
+            color: AppColors.primary,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.09),
+            onTap: () => _launchWebsiteUrl(website!),
+          ),
+        ),
+      );
+    }
+    if (hasMaps) {
+      if (trustRowChildren.isNotEmpty) {
+        trustRowChildren.add(const SizedBox(width: 12));
+      }
+      trustRowChildren.add(
+        Expanded(
+          child: _ContactActionButton(
+            icon: const Icon(Icons.explore_rounded, size: 16, color: Color(0xFF4285F4)),
+            label: 'Google Maps',
+            color: const Color(0xFF4285F4),
+            backgroundColor: const Color(0xFF4285F4).withValues(alpha: 0.10),
+            onTap: () => _launchContactUrl(mapsUrl!),
+          ),
+        ),
+      );
+    }
+
+    final showDirect = directRowChildren.isNotEmpty;
+    final showTrust = trustRowChildren.isNotEmpty;
+
+    if (!showDirect && !showTrust) return const SizedBox.shrink();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showDirect)
+          Row(
+            children: directRowChildren,
+          ),
+        if (showDirect && showTrust) const SizedBox(height: 12),
+        if (showTrust)
+          Row(
+            children: trustRowChildren,
           ),
       ],
     );
@@ -121,27 +193,31 @@ class _ContactActionButtonState extends State<_ContactActionButton> {
         scale: _pressed ? 0.94 : 1.0,
         duration: const Duration(milliseconds: 120),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
           decoration: BoxDecoration(
             color: widget.backgroundColor,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: widget.color.withValues(alpha: 0.25)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              widget.icon,
-              const SizedBox(width: 7),
-              Text(
-                widget.label,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: widget.color,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                widget.icon,
+                const SizedBox(width: 6),
+                Text(
+                  widget.label,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: widget.color,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,14 +1,59 @@
+/// Parses time strings like "13:00", "3:00 PM", or full ISO 8601 into a DateTime.
+/// Returns null if parsing fails.
+DateTime? parseFlexibleTime(String? timeStr) {
+  if (timeStr == null || timeStr.isEmpty) return null;
+
+  // Try full ISO 8601 first (e.g. "2026-05-21T13:00:00")
+  try {
+    return DateTime.parse(timeStr);
+  } catch (_) {}
+
+  // Try "HH:mm" or "H:mm" format (e.g. "13:00", "9:30")
+  final hhmm = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(timeStr);
+  if (hhmm != null) {
+    final h = int.parse(hhmm.group(1)!);
+    final m = int.parse(hhmm.group(2)!);
+    final now = DateTime.now();
+    var dt = DateTime(now.year, now.month, now.day, h, m);
+    // If the time has already passed today, schedule for tomorrow
+    if (dt.isBefore(now)) dt = dt.add(const Duration(days: 1));
+    return dt;
+  }
+
+  // Try "h:mm AM/PM" format (e.g. "3:00 PM", "11:30 AM")
+  final ampm = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', caseSensitive: false).firstMatch(timeStr);
+  if (ampm != null) {
+    var h = int.parse(ampm.group(1)!);
+    final m = int.parse(ampm.group(2)!);
+    final period = ampm.group(3)!.toUpperCase();
+
+    if (period == 'PM' && h < 12) h += 12;
+    if (period == 'AM' && h == 12) h = 0;
+
+    final now = DateTime.now();
+    var dt = DateTime(now.year, now.month, now.day, h, m);
+    if (dt.isBefore(now)) dt = dt.add(const Duration(days: 1));
+    return dt;
+  }
+
+  return null;
+}
+
 class ServiceResponse {
   final bool success;
   final int count;
   final List<ServiceProvider> providers;
   final ServiceIntent intent;
+  final bool hasConflict;
+  final String? originalPreferredTime;
 
   ServiceResponse({
     required this.success,
     required this.count,
     required this.providers,
     required this.intent,
+    this.hasConflict = false,
+    this.originalPreferredTime,
   });
 
   factory ServiceResponse.fromJson(Map<String, dynamic> json) {
@@ -20,6 +65,8 @@ class ServiceResponse {
               .toList() ??
           [],
       intent: ServiceIntent.fromJson(json['intent'] ?? {}),
+      hasConflict: false,
+      originalPreferredTime: null,
     );
   }
 }

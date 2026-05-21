@@ -36,7 +36,7 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
         'service_type': response.intent.service,
         'provider_name': provider.name,
         'total_price': grandTotal,
-        'scheduled_time': response.intent.preferredTime,
+        'scheduled_time': parseFlexibleTime(response.intent.preferredTime)?.toIso8601String() ?? response.intent.preferredTime,
         'urgency': response.intent.urgency,
         'address': provider.address,
         'provider_id': provider.id,
@@ -106,6 +106,8 @@ class _PricingBreakdownScreenState extends ConsumerState<PricingBreakdownScreen>
                 ProviderContactButtons(
                   phone: provider.phone,
                   whatsappTextLink: provider.whatsappTextLink,
+                  mapsUrl: provider.mapsUrl,
+                  website: provider.website,
                 ),
                 const SizedBox(height: 32),
                 Text(
