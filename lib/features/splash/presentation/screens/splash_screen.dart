@@ -159,20 +159,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Pulsing outer shadow wrapper
+        // Clean logo wrapper without background
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                blurRadius: 40,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
           child: const AppLogo(size: 32, showText: false),
         )
         .animate(onPlay: (controller) => controller.repeat(reverse: true))

@@ -82,7 +82,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
               stream: stream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const PremiumLoadingIndicator();
+                  return const PremiumLoadingIndicator(showTips: false);
                 }
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
@@ -164,7 +164,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                     filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                     child: Container(
                       color: AppColors.background.withValues(alpha: 0.3),
-                      child: const Center(child: PremiumLoadingIndicator()),
+                      child: const Center(child: PremiumLoadingIndicator(showTips: false)),
                     ),
                   ),
                 ),
@@ -254,7 +254,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                 ),
               ),
               if (status != 'completed' && status != 'cancelled')
-                const PremiumLoadingIndicator(size: 24),
+                const PremiumLoadingIndicator(size: 24, showTips: false),
               if (status == 'cancelled')
                 const Icon(Icons.cancel_rounded, color: AppColors.error, size: 32),
             ],
