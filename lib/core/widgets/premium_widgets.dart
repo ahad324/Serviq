@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -613,22 +614,170 @@ class StatusBadge extends StatelessWidget {
 class PremiumLoadingIndicator extends StatelessWidget {
   final double size;
   final Color? color;
+  final String? message;
+  final bool showTips;
 
   const PremiumLoadingIndicator({
     super.key,
     this.size = 40.0,
     this.color,
+    this.message,
+    this.showTips = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: CircularProgressIndicator(
-          color: color ?? AppColors.primary,
-          strokeWidth: 3.0,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Ambient Glow
+              Container(
+                width: size * 2.5,
+                height: size * 2.5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      (color ?? AppColors.primary).withValues(alpha: 0.15),
+                      (color ?? AppColors.primary).withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                    duration: 2.seconds,
+                    begin: const Offset(0.8, 0.8),
+                    end: const Offset(1.2, 1.2),
+                  ),
+
+              // Rotating outer ring
+              SizedBox(
+                width: size,
+                height: size,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    (color ?? AppColors.primary).withValues(alpha: 0.3),
+                  ),
+                ),
+              ).animate(onPlay: (c) => c.repeat()).rotate(duration: 3.seconds),
+
+              // Core pulsing logo/icon
+              Container(
+                padding: EdgeInsets.all(size * 0.2),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: color ?? AppColors.primary,
+                  size: size * 0.5,
+                ),
+              )
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .scale(duration: 1.seconds, begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1))
+                  .shimmer(duration: 2.seconds, color: AppColors.primaryLight.withValues(alpha: 0.3)),
+            ],
+          ),
+          if (message != null) ...[
+            const SizedBox(height: 24),
+            Text(
+              message!.toUpperCase(),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: color ?? AppColors.primary,
+                letterSpacing: 1.5,
+              ),
+            ).animate().fadeIn().slideY(begin: 0.2, end: 0),
+          ],
+          if (showTips) ...[
+            const SizedBox(height: 16),
+            _LoadingTipsSection(),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingTipsSection extends StatefulWidget {
+  @override
+  State<_LoadingTipsSection> createState() => _LoadingTipsSectionState();
+}
+
+class _LoadingTipsSectionState extends State<_LoadingTipsSection> {
+  final List<String> _tips = [
+    "Did you know? Regular AC servicing can save up to 25% on electricity bills.",
+    "Pro Tip: Clean your AC filters every 2 weeks for better air quality.",
+    "Safety First: Always check for certified professionals for electrical repairs.",
+    "Fun Fact: Serviq uses AI to match you with the best nearby experts.",
+    "Quick Tip: You can track your service provider in real-time.",
+    "Maintenance Hack: Flush your water heater once a year to remove sediment.",
+  ];
+
+  late int _currentTipIndex;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentTipIndex = DateTime.now().millisecond % _tips.length;
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentTipIndex = (_currentTipIndex + 1) % _tips.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.2),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
+        child: Text(
+          _tips[_currentTipIndex],
+          key: ValueKey<int>(_currentTipIndex),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+            height: 1.5,
+          ),
         ),
       ),
     );

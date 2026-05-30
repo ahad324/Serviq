@@ -1,4 +1,4 @@
-/// Parses time strings like "13:00", "3:00 PM", or full ISO 8601 into a DateTime.
+/// Parses time strings like "13:00", "3:00 PM", "tomorrow 14:00", or full ISO 8601 into a DateTime.
 /// Returns null if parsing fails.
 DateTime? parseFlexibleTime(String? timeStr) {
   if (timeStr == null || timeStr.isEmpty) return null;
@@ -8,31 +8,56 @@ DateTime? parseFlexibleTime(String? timeStr) {
     return DateTime.parse(timeStr);
   } catch (_) {}
 
-  // Try "HH:mm" or "H:mm" format (e.g. "13:00", "9:30")
-  final hhmm = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(timeStr);
-  if (hhmm != null) {
-    final h = int.parse(hhmm.group(1)!);
-    final m = int.parse(hhmm.group(2)!);
+  String input = timeStr.toLowerCase().trim();
+  bool isTomorrow = false;
+
+  if (input.contains('tomorrow')) {
+    isTomorrow = true;
+    input = input.replaceAll('tomorrow', '').trim();
+  } else if (input.contains('today')) {
+    input = input.replaceAll('today', '').trim();
+  }
+
+  // Try "HH:mm" or "H:mm" format with optional AM/PM (e.g. "13:00", "9:30", "3:00 PM", "14:00 pm")
+  final timeRegex = RegExp(r'^(\d{1,2}):(\d{2})\s*(am|pm)?$');
+  final match = timeRegex.firstMatch(input);
+
+  if (match != null) {
+    int h = int.parse(match.group(1)!);
+    final m = int.parse(match.group(2)!);
+    final period = match.group(3);
+
+    if (period == 'pm' && h < 12) h += 12;
+    if (period == 'am' && h == 12) h = 0;
+
     final now = DateTime.now();
-    var dt = DateTime(now.year, now.month, now.day, h, m);
-    // If the time has already passed today, schedule for tomorrow
-    if (dt.isBefore(now)) dt = dt.add(const Duration(days: 1));
+    var baseDate = isTomorrow ? now.add(const Duration(days: 1)) : now;
+    var dt = DateTime(baseDate.year, baseDate.month, baseDate.day, h, m);
+    
+    // If neither "tomorrow" nor "today" was specified and time is in the past, assume tomorrow
+    if (!isTomorrow && !timeStr.toLowerCase().contains('today') && dt.isBefore(now)) {
+      dt = dt.add(const Duration(days: 1));
+    }
     return dt;
   }
 
-  // Try "h:mm AM/PM" format (e.g. "3:00 PM", "11:30 AM")
-  final ampm = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', caseSensitive: false).firstMatch(timeStr);
-  if (ampm != null) {
-    var h = int.parse(ampm.group(1)!);
-    final m = int.parse(ampm.group(2)!);
-    final period = ampm.group(3)!.toUpperCase();
+  // Try just "H AM/PM" (e.g. "2 PM")
+  final hourOnlyRegex = RegExp(r'^(\d{1,2})\s*(am|pm)$');
+  final hourMatch = hourOnlyRegex.firstMatch(input);
+  if (hourMatch != null) {
+    int h = int.parse(hourMatch.group(1)!);
+    final period = hourMatch.group(2);
 
-    if (period == 'PM' && h < 12) h += 12;
-    if (period == 'AM' && h == 12) h = 0;
+    if (period == 'pm' && h < 12) h += 12;
+    if (period == 'am' && h == 12) h = 0;
 
     final now = DateTime.now();
-    var dt = DateTime(now.year, now.month, now.day, h, m);
-    if (dt.isBefore(now)) dt = dt.add(const Duration(days: 1));
+    var baseDate = isTomorrow ? now.add(const Duration(days: 1)) : now;
+    var dt = DateTime(baseDate.year, baseDate.month, baseDate.day, h, 0);
+
+    if (!isTomorrow && !timeStr.toLowerCase().contains('today') && dt.isBefore(now)) {
+      dt = dt.add(const Duration(days: 1));
+    }
     return dt;
   }
 
