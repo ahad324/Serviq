@@ -627,6 +627,9 @@ class PremiumLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Safeguard: Do not show tips if the indicator is explicitly small (e.g., in a list or header)
+    final bool canShowTips = showTips && size >= 32;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -703,7 +706,7 @@ class PremiumLoadingIndicator extends StatelessWidget {
               ),
             ).animate().fadeIn().slideY(begin: 0.2, end: 0),
           ],
-          if (showTips) ...[
+          if (canShowTips) ...[
             const SizedBox(height: 16),
             _LoadingTipsSection(),
           ],
@@ -753,7 +756,7 @@ class _LoadingTipsSectionState extends State<_LoadingTipsSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 32),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         transitionBuilder: (Widget child, Animation<double> animation) {
