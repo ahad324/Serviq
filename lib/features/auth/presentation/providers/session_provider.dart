@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,6 +7,9 @@ import '../../data/models/user_model.dart';
 
 class SessionNotifier extends Notifier<UserModel?> {
   late SharedPreferences _prefs;
+  final Completer<void> _initCompleter = Completer<void>();
+
+  Future<void> get initializationComplete => _initCompleter.future;
   
   static const String _sessionKey = 'user_session';
 
@@ -43,16 +47,22 @@ class SessionNotifier extends Notifier<UserModel?> {
   }
 
   Future<void> _initializeSession() async {
-    _prefs = await SharedPreferences.getInstance();
-    
-    // Try to restore session from SharedPreferences
-    final savedUserJson = _prefs.getString(_sessionKey);
-    if (savedUserJson != null) {
-      try {
-        final user = UserModel.fromJson(jsonDecode(savedUserJson));
-        state = user;
-      } catch (_) {
-        // Fail silently
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      
+      // Try to restore session from SharedPreferences
+      final savedUserJson = _prefs.getString(_sessionKey);
+      if (savedUserJson != null) {
+        try {
+          final user = UserModel.fromJson(jsonDecode(savedUserJson));
+          state = user;
+        } catch (_) {
+          // Fail silently
+        }
+      }
+    } finally {
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
       }
     }
   }
